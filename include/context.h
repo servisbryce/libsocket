@@ -2,6 +2,7 @@
 #define CONTEXT_H_
 
 #include <openssl/ssl.h>
+#include <stdbool.h>
 #include <stddef.h>
 
 /* This context is optional. If this context isn't set by the user, then all traffic will be unencrypted. */
@@ -46,5 +47,10 @@ typedef struct socket_context {
     bool isserver;
 
 } socket_context_t;
+
+int create_socket_context(char *address, uint16_t port, bool isserver, socket_context_t **socket_context);
+int create_tls_context(socket_context_t *socket_context, char *chained_certificate_path, char *certificate_path, char *private_key_path);
+void free_socket_context(socket_context_t **socket_context);
+void free_tls_context(tls_context_t *tls_context);
 
 #endif

@@ -8,7 +8,7 @@ int openssl_tls_cache_id = 1;
 int create_socket_context(char *address, uint16_t port, bool isserver, socket_context_t **socket_context) {
 
     /* Validate our function inputs to ensure they're set properly. */
-    if (!address || port <= 0 || !socket_context || !isserver) {
+    if (!address || port <= 0 || !isserver) {
 
         return -1;
 
@@ -32,6 +32,7 @@ int create_socket_context(char *address, uint16_t port, bool isserver, socket_co
     result->isserver = isserver;
 
     /* Pass the context to the user and declare success. */
+    *socket_context = result;
     return 0;
 
 }
@@ -58,7 +59,7 @@ int create_tls_context(socket_context_t *socket_context, char *chained_certifica
 
     } else {
 
-        tls_context->openssl_context = SSL_CTX_new(TLS_client_method);
+        tls_context->openssl_context = SSL_CTX_new(TLS_client_method());
 
     }
 
@@ -85,7 +86,7 @@ int create_tls_context(socket_context_t *socket_context, char *chained_certifica
 
     }
 
-    if (tls_context->certificate_path && SSL_CTX_use_certificate(tls_context->openssl_context, tls_context->certificate_path) <= 0) {
+    if (tls_context->certificate_path && SSL_CTX_use_certificate_file(tls_context->openssl_context, tls_context->certificate_path, SSL_FILETYPE_PEM) <= 0) {
 
         SSL_CTX_free(tls_context->openssl_context);
         return -1;
@@ -99,21 +100,21 @@ int create_tls_context(socket_context_t *socket_context, char *chained_certifica
 
     }
 
-    if (SSL_CTX_set_session_id_context(tls_context->openssl_context, (void *) openssl_tls_cache_id, sizeof(openssl_tls_cache_id)) <= 0) {
+    if (SSL_CTX_set_session_id_context(tls_context->openssl_context, (void *) &openssl_tls_cache_id, sizeof(openssl_tls_cache_id)) <= 0) {
 
         SSL_CTX_free(tls_context->openssl_context);
         return -1;
 
     }
 
-    SSL_CTX_set_cache_size(tls_context->openssl_context, tls_context->tls_cache_length);
+    SSL_CTX_sess_set_cache_size(tls_context->openssl_context, tls_context->tls_cache_length);
     if (socket_context->isserver) {
 
-        SSL_CTX_set_cache_mode(tls_context->openssl_context, SSL_SESS_CACHE_SERVER);
+        SSL_CTX_set_session_cache_mode(tls_context->openssl_context, SSL_SESS_CACHE_SERVER);
 
     } else {
 
-        SSL_CTX_set_cache_mode(tls_context->openssl_context, SSL_SESS_CACHE_CLIENT);
+        SSL_CTX_set_session_cache_mode(tls_context->openssl_context, SSL_SESS_CACHE_CLIENT);
 
     }
 
@@ -130,6 +131,7 @@ int create_tls_context(socket_context_t *socket_context, char *chained_certifica
     }
 
     socket_context->tls_context = tls_context;
+    return 0;
 
 }
 
@@ -168,7 +170,7 @@ void free_tls_context(tls_context_t *tls_context) {
     /* Free our OpenSSL data if it exists. */
     if (tls_context->openssl_context) {
 
-        SSL_ctx_free(tls_context->openssl_context);
+        SSL_CTX_free(tls_context->openssl_context);
 
     }
 

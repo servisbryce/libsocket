@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <netdb.h>
+#include <stdio.h>
 
 /* 
 
@@ -21,8 +22,10 @@ int create_sockaddr(char *address, struct sockaddr **sockaddr) {
     /* Determine the address of the host that we're discovering. */
     struct addrinfo *response = NULL;
     struct addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_PASSIVE;
     if (getaddrinfo(address, NULL, &hints, &response) != 0) {
 
         return -1;
