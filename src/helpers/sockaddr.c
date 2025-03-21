@@ -12,6 +12,8 @@
 
     The user is responsible for dictating what port is being used whenever they interact with the structure outside of this function as this function is designed to be address protocol agnostic.
 
+    This function returns a status code. Any value that isn't zero is an error declaration.
+
 */
 
 int create_sockaddr(char *address, struct sockaddr **sockaddr) {
