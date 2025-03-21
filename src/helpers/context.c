@@ -34,6 +34,19 @@ int create_socket_context(char *address, uint16_t port, bool isserver, socket_co
     /* Pass the context to the user and declare success. */
     *socket_context = result;
     return 0;
+    
+}
+
+int socket_context_set_timeout(socket_context_t *socket_context, int timeout) {
+
+    if (!socket_context) {
+
+        return -1;
+
+    }
+
+    socket_context->timeout = timeout;
+    return 0;
 
 }
 
@@ -48,10 +61,10 @@ int create_tls_context(socket_context_t *socket_context, char *chained_certifica
 
     tls_context_t *tls_context = (tls_context_t *) malloc(sizeof(tls_context_t));
     tls_context->chained_certificate_path = chained_certificate_path;
-    tls_context->openssl_tls_cache_id = &openssl_tls_cache_id;
+    tls_context->openssl_tls_cache_id = openssl_tls_cache_id;
     tls_context->certificate_path = certificate_path;
     tls_context->private_key_path = private_key_path;
-    tls_context->tls_cache_length = 32768;
+    tls_context->tls_cache_length = 32000;
     tls_context->tls_cache_expiry = 3600;
     if (socket_context->isserver) {
 
@@ -79,6 +92,7 @@ int create_tls_context(socket_context_t *socket_context, char *chained_certifica
     }
 
     tls_context->tls_options |= SSL_OP_IGNORE_UNEXPECTED_EOF | SSL_OP_NO_RENEGOTIATION | SSL_OP_CIPHER_SERVER_PREFERENCE;
+    SSL_CTX_set_options(tls_context->openssl_context, tls_context->tls_options);
     if (tls_context->chained_certificate_path && SSL_CTX_use_certificate_chain_file(tls_context->openssl_context, tls_context->chained_certificate_path) <= 0)  {
 
         SSL_CTX_free(tls_context->openssl_context);
@@ -100,13 +114,14 @@ int create_tls_context(socket_context_t *socket_context, char *chained_certifica
 
     }
 
-    if (SSL_CTX_set_session_id_context(tls_context->openssl_context, (void *) &openssl_tls_cache_id, sizeof(openssl_tls_cache_id)) <= 0) {
+    if (SSL_CTX_set_session_id_context(tls_context->openssl_context, (void *) &tls_context->openssl_tls_cache_id, sizeof(tls_context->openssl_tls_cache_id)) <= 0) {
 
         SSL_CTX_free(tls_context->openssl_context);
         return -1;
 
     }
 
+    openssl_tls_cache_id++;
     SSL_CTX_sess_set_cache_size(tls_context->openssl_context, tls_context->tls_cache_length);
     if (socket_context->isserver) {
 
@@ -135,6 +150,90 @@ int create_tls_context(socket_context_t *socket_context, char *chained_certifica
 
 }
 
+int tls_context_set_cache_length(socket_context_t *socket_context, size_t tls_context_cache_length) {
+
+    if (!socket_context || !socket_context->tls_context || !socket_context->tls_context->openssl_context) {
+
+        return -1;
+
+    }
+
+    socket_context->tls_context->tls_cache_length = tls_context_cache_length;
+    SSL_CTX_sess_set_cache_size(socket_context->tls_context->openssl_context, socket_context->tls_context->tls_cache_length);
+    return 0;
+
+}
+
+int tls_context_set_cache_expiry(socket_context_t *socket_context, int expiry) {
+
+    if (!socket_context || !socket_context->tls_context || !socket_context->tls_context->openssl_context) {
+
+        return -1;
+
+    }
+
+    socket_context->tls_context->tls_cache_expiry = expiry;
+    SSL_CTX_set_timeout(socket_context->tls_context->openssl_context, socket_context->tls_context->tls_cache_expiry);
+    return 0;
+
+}
+
+int tls_context_set_options(socket_context_t *socket_context, long options) {
+
+    if (!socket_context || !socket_context->tls_context || !socket_context->tls_context->openssl_context) {
+
+        return -1;
+
+    }
+
+    socket_context->tls_context->tls_options = options;
+    SSL_CTX_set_options(socket_context->tls_context->openssl_context, socket_context->tls_context->tls_options);
+    return 0;
+
+}
+
+int tls_context_append_options(socket_context_t *socket_context, long options) {
+
+    if (!socket_context || !socket_context->tls_context || !socket_context->tls_context->openssl_context || !socket_context->tls_context->tls_options) {
+
+        return -1;
+
+    }
+
+    socket_context->tls_context->tls_options |= options;
+    SSL_CTX_set_options(socket_context->tls_context->openssl_context, socket_context->tls_context->tls_options);
+    return 0;
+
+}
+
+int tls_context_set_minimum_version(socket_context_t *socket_context, int minimum_version) {
+
+    if (!socket_context || !socket_context->tls_context || !socket_context->tls_context->openssl_context) {
+
+        return -1;
+
+    }
+
+    socket_context->tls_context->minimum_tls_version = minimum_version;
+    SSL_CTX_set_min_proto_version(socket_context->tls_context->openssl_context, minimum_version);
+    return 0;
+
+}
+
+int tls_context_set_maximum_version(socket_context_t *socket_context, int maximum_version) {
+
+    if (!socket_context || !socket_context->tls_context || !socket_context->tls_context->openssl_context) {
+
+        return -1;
+
+    }
+
+    socket_context->tls_context->minimum_tls_version = maximum_version;
+    SSL_CTX_set_max_proto_version(socket_context->tls_context->openssl_context, maximum_version);
+    return 0;
+
+}
+
 void free_socket_context(socket_context_t **socket_context) {
 
     /* Validate our function inputs to ensure they're set properly. */
@@ -157,6 +256,8 @@ void free_socket_context(socket_context_t **socket_context) {
     return;
 
 }
+
+
 
 void free_tls_context(tls_context_t *tls_context) {
 
@@ -186,3 +287,4 @@ void free_tls_context(tls_context_t *tls_context) {
     return;
 
 }
+

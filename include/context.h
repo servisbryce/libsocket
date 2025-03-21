@@ -10,7 +10,7 @@ typedef struct tls_context {
 
     /* You shouldn't interact with these variables unless through a function in this library. */
     SSL_CTX *openssl_context;
-    int *openssl_tls_cache_id;
+    int openssl_tls_cache_id;
     BIO *openssl_bio;
 
     /* These are optional. If they aren't set by the user, then a cache will be automatically created with sane defaults. */
@@ -41,7 +41,10 @@ typedef struct socket_context {
     /* This is optional. If you don't set this option, all traffic will be unencrypted. */
     tls_context_t *tls_context;
 
-    /* These are required. If you don't set these, then an error will be declared. */
+    /* This is optional. If you don't set this option, keepalives will be disabled (you want them most of the time!). */
+    int timeout;
+
+    /* These are required. If you don't set these, then an error will be declared. You shouldn't ever change these after you've created your context, create a new context instead. */
     uint16_t port;
     char *address;
     bool isserver;
@@ -49,7 +52,14 @@ typedef struct socket_context {
 } socket_context_t;
 
 int create_socket_context(char *address, uint16_t port, bool isserver, socket_context_t **socket_context);
+int socket_context_set_timeout(socket_context_t *socket_context, int timeout);
 int create_tls_context(socket_context_t *socket_context, char *chained_certificate_path, char *certificate_path, char *private_key_path);
+int tls_context_set_cache_length(socket_context_t *socket_context, size_t tls_context_cache_length);
+int tls_context_set_cache_expiry(socket_context_t *socket_context, int expiry);
+int tls_context_set_options(socket_context_t *socket_context, long options);
+int tls_context_append_options(socket_context_t *socket_context, long options);
+int tls_context_set_minimum_version(socket_context_t *socket_context, int minimum_version);
+int tls_context_set_maximum_version(socket_context_t *socket_context, int maximum_version);
 void free_socket_context(socket_context_t **socket_context);
 void free_tls_context(tls_context_t *tls_context);
 
