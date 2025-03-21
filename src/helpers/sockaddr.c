@@ -6,7 +6,15 @@
 #include <string.h>
 #include <netdb.h>
 
-int create_sockaddr(char *address, uint16_t port, struct sockaddr **sockaddr) {
+/* 
+
+    This automatically determines the socket address for whatever domain or internet address you're requesting.
+
+    The user is responsible for dictating what port is being used whenever they interact with the structure outside of this function as this function is designed to be address protocol agnostic.
+
+*/
+
+int create_sockaddr(char *address, struct sockaddr **sockaddr) {
 
     /* Determine the address of the host that we're discovering. */
     struct addrinfo *response = NULL;
