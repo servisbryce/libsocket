@@ -157,9 +157,12 @@ int create_tls_context(socket_context_t *socket_context, char *chained_certifica
 
         /* Whenever we're a client, automatically deny connections from servers that use an untrustworthy certificate. This is incredibly important to ensure that man-in-the-middle attacks don't occur! */
         SSL_CTX_set_verify(tls_context->openssl_context, SSL_VERIFY_PEER, NULL);
+
+        /* Enforce the systems default paths for certificate authorities. */
         if (!SSL_CTX_set_default_verify_paths(tls_context->openssl_context)) {
 
-            
+            free(tls_context);
+            SSL_CTX_free(tls_context->openssl_context);
 
         }
 

@@ -13,7 +13,7 @@ int create_socket(socket_context_t *socket_context) {
 
     if (socket_context->isserver) {
 
-        if ((socket_context->socket_descriptor = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        if ((socket_context->socket_descriptor = socket(socket_context->sockaddr->sa_family, SOCK_STREAM, 0)) < 0) {
 
             return -1;
 
@@ -40,7 +40,7 @@ int create_socket(socket_context_t *socket_context) {
 
     } else {
 
-        if ((socket_context->socket_descriptor = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+        if ((socket_context->socket_descriptor = socket(socket_context->sockaddr->sa_family, SOCK_STREAM, 0)) < 0) {
 
             return -1;
 
