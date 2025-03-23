@@ -40,7 +40,7 @@ typedef struct socket_context {
 
     /* You shouldn't interact with these variables unless through a function in this library. */
     struct sockaddr *sockaddr;
-    bool addressIsDomain;
+    bool addressisdomain;
     int socket_descriptor;
 
     /* This is optional. If you don't set this option, all traffic will be unencrypted. */

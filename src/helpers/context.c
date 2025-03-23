@@ -12,11 +12,11 @@ bool determine_address_type(char *address) {
     struct sockaddr_in6 sockaddr6;
     if ((inet_pton(AF_INET, address, &(sockaddr.sin_addr)) == 1) || (inet_pton(AF_INET6, address, &(sockaddr6.sin_addr)) == 1)) {
 
-        return true;
+        return false;
 
     }
 
-    return false;
+    return true;
 
 }
 
@@ -45,6 +45,7 @@ int create_socket_context(char *address, uint16_t port, bool isserver, socket_co
     result->port = port;
     result->sockaddr = sockaddr;
     result->isserver = isserver;
+    result->addressisdomain = determine_address_type(address);
 
     /* Pass the context to the user and declare success. */
     *socket_context = result;

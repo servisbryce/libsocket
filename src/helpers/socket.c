@@ -66,6 +66,25 @@ int create_socket(socket_context_t *socket_context) {
 
             }
 
+            /* If we're connecting to a server via domain name services, we should run some checks on the corresponding certificate to ensure everything is hardened. */
+            if (socket_context->addressisdomain) {
+
+                if (!SSL_set_tlsext_host_name(socket_context->tls_context->openssl_instance, socket_context->address)) {
+
+                    SSL_free(socket_context->tls_context->openssl_instance);
+                    return -1;
+
+                }
+
+                if (!SSL_set1_host(socket_context->tls_context->openssl_instance, socket_context->address)) {
+
+                    SSL_free(socket_context->tls_context->openssl_instance);
+                    return -1;
+
+                }
+
+            }
+
             int handshake_result;
             SSL_set_bio(socket_context->tls_context->openssl_instance, socket_context->tls_context->openssl_bio, socket_context->tls_context->openssl_bio);
             if ((handshake_result = SSL_connect(socket_context->tls_context->openssl_context)) == 0) {
