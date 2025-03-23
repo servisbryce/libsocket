@@ -1,11 +1,13 @@
 #include "../../include/context.h"
+#include <netinet/in.h>
 #include <sys/socket.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 int create_socket(socket_context_t *socket_context) {
 
-    if (!socket_context->address, !socket_context->port, !socket_context->sockaddr) {
+    if (!socket_context->address || !socket_context->port || !socket_context->sockaddr) {
 
         return -1;
 
@@ -20,7 +22,7 @@ int create_socket(socket_context_t *socket_context) {
     if (socket_context->isserver) {
 
         int option = 1;
-        if (setsockopt(socket_context->socket_descriptor, SOL_SOCKET | SO_REUSEADDR | SO_REUSEPORT, &option, sizeof(option))) {
+        if (setsockopt(socket_context->socket_descriptor, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &option, sizeof(option))) {
 
             return -1;
 
@@ -89,9 +91,9 @@ int create_socket(socket_context_t *socket_context) {
 
             int handshake_result;
             SSL_set_bio(socket_context->tls_context->openssl_instance, socket_context->tls_context->openssl_bio, socket_context->tls_context->openssl_bio);
-            if ((handshake_result = SSL_connect(socket_context->tls_context->openssl_context)) < 1) {
+            if ((handshake_result = SSL_connect(socket_context->tls_context->openssl_instance)) < 1) {
 
-                SSL_free(ssl);
+                SSL_free(socket_context->tls_context->openssl_instance);
                 close(socket_context->socket_descriptor);
                 return -1;
 
