@@ -1,5 +1,7 @@
 #include "../../include/sockaddr.h"
 #include "../../include/context.h"
+#include <netinet/in.h>
+#include <arpa/inet.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -10,7 +12,7 @@ bool determine_address_type(char *address) {
 
     struct sockaddr_in sockaddr;
     struct sockaddr_in6 sockaddr6;
-    if ((inet_pton(AF_INET, address, &(sockaddr.sin_addr)) == 1) || (inet_pton(AF_INET6, address, &(sockaddr6.sin_addr)) == 1)) {
+    if ((inet_pton(AF_INET, address, &(sockaddr.sin_addr)) == 1) || (inet_pton(AF_INET6, address, &(sockaddr6.sin6_addr)) == 1)) {
 
         return false;
 
@@ -104,8 +106,8 @@ int create_tls_context(socket_context_t *socket_context, char *chained_certifica
     tls_context->minimum_tls_version = TLS1_2_VERSION;
     if (!SSL_CTX_set_min_proto_version(tls_context->openssl_context, tls_context->minimum_tls_version)) {
 
-        free(tls_context);
         SSL_CTX_free(tls_context->openssl_context);
+        free(tls_context);
         return -1;
 
     }
@@ -114,40 +116,40 @@ int create_tls_context(socket_context_t *socket_context, char *chained_certifica
     SSL_CTX_set_options(tls_context->openssl_context, tls_context->tls_options);
     if (tls_context->chained_certificate_path && SSL_CTX_use_certificate_chain_file(tls_context->openssl_context, tls_context->chained_certificate_path) <= 0)  {
 
-        free(tls_context);
         SSL_CTX_free(tls_context->openssl_context);
+        free(tls_context);
         return -1;
 
     }
 
     if (tls_context->certificate_path && SSL_CTX_use_certificate_file(tls_context->openssl_context, tls_context->certificate_path, SSL_FILETYPE_PEM) <= 0) {
 
-        free(tls_context);
         SSL_CTX_free(tls_context->openssl_context);
+        free(tls_context);
         return -1;
 
     }
 
     if (SSL_CTX_use_PrivateKey_file(tls_context->openssl_context, tls_context->private_key_path, SSL_FILETYPE_PEM) <= 0) {
 
-        free(tls_context);
         SSL_CTX_free(tls_context->openssl_context);
+        free(tls_context);
         return -1;
 
     }
 
     if (!SSL_CTX_check_private_key(tls_context->openssl_context)) {
 
-        free(tls_context);
         SSL_CTX_free(tls_context->openssl_context);
+        free(tls_context);
         return -1;
 
     }
 
     if (SSL_CTX_set_session_id_context(tls_context->openssl_context, (void *) &tls_context->openssl_tls_cache_id, sizeof(tls_context->openssl_tls_cache_id)) <= 0) {
 
-        free(tls_context);
         SSL_CTX_free(tls_context->openssl_context);
+        free(tls_context);
         return -1;
 
     }
