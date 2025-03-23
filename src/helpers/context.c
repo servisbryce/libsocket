@@ -114,6 +114,12 @@ int create_tls_context(socket_context_t *socket_context, char *chained_certifica
 
     }
 
+    if (!SSL_CTX_check_private_key(tls_context->openssl_context)) {
+
+        return -1;
+
+    }
+
     if (SSL_CTX_set_session_id_context(tls_context->openssl_context, (void *) &tls_context->openssl_tls_cache_id, sizeof(tls_context->openssl_tls_cache_id)) <= 0) {
 
         SSL_CTX_free(tls_context->openssl_context);
