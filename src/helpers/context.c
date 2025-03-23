@@ -88,6 +88,7 @@ int create_tls_context(socket_context_t *socket_context, char *chained_certifica
     tls_context->minimum_tls_version = TLS1_2_VERSION;
     if (!SSL_CTX_set_min_proto_version(tls_context->openssl_context, tls_context->minimum_tls_version)) {
 
+        free(tls_context);
         SSL_CTX_free(tls_context->openssl_context);
         return -1;
 
@@ -97,6 +98,7 @@ int create_tls_context(socket_context_t *socket_context, char *chained_certifica
     SSL_CTX_set_options(tls_context->openssl_context, tls_context->tls_options);
     if (tls_context->chained_certificate_path && SSL_CTX_use_certificate_chain_file(tls_context->openssl_context, tls_context->chained_certificate_path) <= 0)  {
 
+        free(tls_context);
         SSL_CTX_free(tls_context->openssl_context);
         return -1;
 
@@ -104,6 +106,7 @@ int create_tls_context(socket_context_t *socket_context, char *chained_certifica
 
     if (tls_context->certificate_path && SSL_CTX_use_certificate_file(tls_context->openssl_context, tls_context->certificate_path, SSL_FILETYPE_PEM) <= 0) {
 
+        free(tls_context);
         SSL_CTX_free(tls_context->openssl_context);
         return -1;
 
@@ -111,6 +114,7 @@ int create_tls_context(socket_context_t *socket_context, char *chained_certifica
 
     if (SSL_CTX_use_PrivateKey_file(tls_context->openssl_context, tls_context->private_key_path, SSL_FILETYPE_PEM) <= 0) {
 
+        free(tls_context);
         SSL_CTX_free(tls_context->openssl_context);
         return -1;
 
@@ -118,12 +122,15 @@ int create_tls_context(socket_context_t *socket_context, char *chained_certifica
 
     if (!SSL_CTX_check_private_key(tls_context->openssl_context)) {
 
+        free(tls_context);
+        SSL_CTX_free(tls_context->openssl_context);
         return -1;
 
     }
 
     if (SSL_CTX_set_session_id_context(tls_context->openssl_context, (void *) &tls_context->openssl_tls_cache_id, sizeof(tls_context->openssl_tls_cache_id)) <= 0) {
 
+        free(tls_context);
         SSL_CTX_free(tls_context->openssl_context);
         return -1;
 
@@ -150,6 +157,11 @@ int create_tls_context(socket_context_t *socket_context, char *chained_certifica
 
         /* Whenever we're a client, automatically deny connections from servers that use an untrustworthy certificate. This is incredibly important to ensure that man-in-the-middle attacks don't occur! */
         SSL_CTX_set_verify(tls_context->openssl_context, SSL_VERIFY_PEER, NULL);
+        if (!SSL_CTX_set_default_verify_paths(tls_context->openssl_context)) {
+
+            
+
+        }
 
     }
 

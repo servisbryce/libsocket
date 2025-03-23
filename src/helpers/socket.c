@@ -66,7 +66,17 @@ int create_socket(socket_context_t *socket_context) {
 
             }
 
-            
+            int handshake_result;
+            SSL_set_bio(socket_context->tls_context->openssl_instance, socket_context->tls_context->openssl_bio, socket_context->tls_context->openssl_bio);
+            if ((handshake_result = SSL_connect(socket_context->tls_context->openssl_context)) == 0) {
+
+                return -1;
+
+            } else if (handshake_result < 0) {
+
+                SSL_free(socket_context->tls_context->openssl_instance);
+
+            }
 
         }
 
