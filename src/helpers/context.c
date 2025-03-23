@@ -257,8 +257,6 @@ void free_socket_context(socket_context_t **socket_context) {
 
 }
 
-
-
 void free_tls_context(tls_context_t *tls_context) {
 
     /* Validate our function inputs to ensure they're set properly. */

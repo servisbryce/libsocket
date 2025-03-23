@@ -2,6 +2,7 @@
 #define CONTEXT_H_
 
 #include <openssl/ssl.h>
+#include <openssl/bio.h>
 #include <stdbool.h>
 #include <stddef.h>
 
