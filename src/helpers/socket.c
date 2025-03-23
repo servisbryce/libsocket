@@ -48,6 +48,7 @@ int create_socket(socket_context_t *socket_context) {
 
         if (connect(socket_context->socket_descriptor, socket_context->sockaddr, sizeof(struct sockaddr_in)) < 0) {
 
+            close(socket_context->socket_descriptor);
             return -1;
 
         }
@@ -56,12 +57,15 @@ int create_socket(socket_context_t *socket_context) {
 
             if (!(socket_context->tls_context->openssl_bio = BIO_new_socket(socket_context->socket_descriptor, BIO_NOCLOSE))) {
 
+                close(socket_context->socket_descriptor);
                 return -1;
 
             }
 
             if (!(socket_context->tls_context->openssl_instance = SSL_new(socket_context->tls_context->openssl_context))) {
 
+                BIO_free(socket_context->tls_context->openssl_bio);
+                close(socket_context->socket_descriptor);
                 return -1;
 
             }
@@ -71,14 +75,18 @@ int create_socket(socket_context_t *socket_context) {
 
                 if (!SSL_set_tlsext_host_name(socket_context->tls_context->openssl_instance, socket_context->address)) {
 
+                    BIO_free(socket_context->tls_context->openssl_bio);
                     SSL_free(socket_context->tls_context->openssl_instance);
+                    close(socket_context->socket_descriptor);
                     return -1;
 
                 }
 
                 if (!SSL_set1_host(socket_context->tls_context->openssl_instance, socket_context->address)) {
 
+                    BIO_free(socket_context->tls_context->openssl_bio);
                     SSL_free(socket_context->tls_context->openssl_instance);
+                    close(socket_context->socket_descriptor);
                     return -1;
 
                 }
@@ -87,13 +95,11 @@ int create_socket(socket_context_t *socket_context) {
 
             int handshake_result;
             SSL_set_bio(socket_context->tls_context->openssl_instance, socket_context->tls_context->openssl_bio, socket_context->tls_context->openssl_bio);
-            if ((handshake_result = SSL_connect(socket_context->tls_context->openssl_context)) == 0) {
+            if ((handshake_result = SSL_connect(socket_context->tls_context->openssl_context)) < 1) {
 
+                SSL_free(ssl);
+                close(socket_context->socket_descriptor);
                 return -1;
-
-            } else if (handshake_result < 0) {
-
-                SSL_free(socket_context->tls_context->openssl_instance);
 
             }
 
