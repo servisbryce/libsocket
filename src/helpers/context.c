@@ -60,6 +60,8 @@ int create_tls_context(socket_context_t *socket_context, char *chained_certifica
     }
 
     tls_context_t *tls_context = (tls_context_t *) malloc(sizeof(tls_context_t));
+    tls_context->openssl_instance = NULL;
+    tls_context->openssl_bio = NULL;
     tls_context->chained_certificate_path = chained_certificate_path;
     tls_context->openssl_tls_cache_id = openssl_tls_cache_id;
     tls_context->certificate_path = certificate_path;

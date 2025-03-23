@@ -38,18 +38,6 @@ int create_socket(socket_context_t *socket_context) {
 
         }
 
-        if (socket_context->tls_context) {
-
-            if (!(socket_context->tls_context->openssl_bio = BIO_new_socket(socket_context->socket_descriptor, BIO_NOCLOSE))) {
-
-                return -1;
-
-            }
-
-            
-
-        }
-
     } else {
 
         if ((socket_context->socket_descriptor = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -66,7 +54,19 @@ int create_socket(socket_context_t *socket_context) {
 
         if (socket_context->tls_context) {
 
+            if (!(socket_context->tls_context->openssl_bio = BIO_new_socket(socket_context->socket_descriptor, BIO_NOCLOSE))) {
 
+                return -1;
+
+            }
+
+            if (!(socket_context->tls_context->openssl_instance = SSL_new(socket_context->tls_context->openssl_context))) {
+
+                return -1;
+
+            }
+
+            
 
         }
 

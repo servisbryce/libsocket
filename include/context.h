@@ -14,6 +14,9 @@ typedef struct tls_context {
     int openssl_tls_cache_id;
     BIO *openssl_bio;
 
+    /* You shouldn't interact with this. This is for client-mode only. */
+    SSL *openssl_instance;
+
     /* These are optional. If they aren't set by the user, then a cache will be automatically created with sane defaults. */
     size_t tls_cache_length;
     int tls_cache_expiry;
