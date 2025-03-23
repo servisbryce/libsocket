@@ -11,13 +11,13 @@ int create_socket(socket_context_t *socket_context) {
 
     }
 
+    if ((socket_context->socket_descriptor = socket(socket_context->sockaddr->sa_family, SOCK_STREAM, 0)) < 0) {
+
+        return -1;
+
+    }
+
     if (socket_context->isserver) {
-
-        if ((socket_context->socket_descriptor = socket(socket_context->sockaddr->sa_family, SOCK_STREAM, 0)) < 0) {
-
-            return -1;
-
-        }
 
         int option = 1;
         if (setsockopt(socket_context->socket_descriptor, SOL_SOCKET | SO_REUSEADDR | SO_REUSEPORT, &option, sizeof(option))) {
@@ -39,12 +39,6 @@ int create_socket(socket_context_t *socket_context) {
         }
 
     } else {
-
-        if ((socket_context->socket_descriptor = socket(socket_context->sockaddr->sa_family, SOCK_STREAM, 0)) < 0) {
-
-            return -1;
-
-        }
 
         if (connect(socket_context->socket_descriptor, socket_context->sockaddr, sizeof(struct sockaddr_in)) < 0) {
 
