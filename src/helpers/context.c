@@ -1,9 +1,24 @@
 #include "../../include/sockaddr.h"
 #include "../../include/context.h"
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 
 int openssl_tls_cache_id = 1;
+
+bool determine_address_type(char *address) {
+
+    struct sockaddr_in sockaddr;
+    struct sockaddr_in6 sockaddr6;
+    if ((inet_pton(AF_INET, address, &(sockaddr.sin_addr)) == 1) || (inet_pton(AF_INET6, address, &(sockaddr6.sin_addr)) == 1)) {
+
+        return true;
+
+    }
+
+    return false;
+
+}
 
 int create_socket_context(char *address, uint16_t port, bool isserver, socket_context_t **socket_context) {
 
