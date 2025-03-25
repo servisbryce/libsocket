@@ -34,7 +34,6 @@ int create_sockaddr(char *address, struct sockaddr **sockaddr) {
 
     /* Construct the socket address and pass the data to the user. */
     struct sockaddr *result = response->ai_addr;
-    result->sa_family = AF_INET;
     *sockaddr = result;
 
     /* Return our memory back to the user and declare success. */
