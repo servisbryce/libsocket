@@ -8,20 +8,20 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-void unblock_socket_file_descriptor(int socket) {
+int unblock_socket_file_descriptor(int socket) {
 
     int flags;
-    if ((flags = fcntl(socket_context->socket_descriptor, F_GETFL, 0)) == -1) {
+    if ((flags = fcntl(socket, F_GETFL, 0)) == -1) {
     
-        close(socket_context->socket_descriptor);
+        close(socket);
         return -1;
     
     }    
 
     flags |= O_NONBLOCK;
-    if (fnctl(socket_context->socket_descriptor, F_SETFL, flags) == -1) {
+    if (fnctl(socket, F_SETFL, flags) == -1) {
 
-        close(socket_context->socket_descriptor);
+        close(socket);
         return -1;
 
     }
@@ -43,6 +43,12 @@ int create_socket(socket_context_t *socket_context) {
     }
 
     if (socket_context->isserver) {
+
+        if (unblock_socket_file_descriptor(socket_context->socket_descriptor) == -1) {
+
+            return -1;
+
+        }
 
         int option = 1;
         if (setsockopt(socket_context->socket_descriptor, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &option, sizeof(option))) {
