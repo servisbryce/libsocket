@@ -62,14 +62,6 @@ int create_socket(socket_context_t *socket_context) {
 
         }
 
-        int epoll_descriptor;
-        if ((epoll_descriptor = epoll_create1(0)) == -1) {
-
-            close(socket_context->socket_descriptor);
-            return -1;
-
-        }
-
     } else {
 
         if (connect(socket_context->socket_descriptor, socket_context->sockaddr, sizeof(struct sockaddr_in)) < 0) {
@@ -143,6 +135,31 @@ int socket_dispatch(socket_context_t *socket_context, void (*f)(socket_dispatch_
 
     }
 
-    
+    int epoll_descriptor;
+    if ((epoll_descriptor = epoll_create1(0)) == -1) {
+
+        close(socket_context->socket_descriptor);
+        return -1;
+
+    }
+
+    struct epoll_event event, events[32];
+    memset(&event, 0, sizeof(struct epoll_event));
+    memset(&events, 0, sizeof(struct epoll_event));
+    event.events = EPOLLIN;
+    event.data.fd = socket_context->socket_descriptor;
+    if (epoll_ctl(epoll_descriptor, EPOLL_CTL_ADD, socket_context->socket_descriptor, &event) == -1) {
+
+        close(socket_context->socket_descriptor);
+        close(epoll_descriptor);
+        return -1;
+
+    }
+
+    while (1) {
+
+        
+
+    }
     
 }
