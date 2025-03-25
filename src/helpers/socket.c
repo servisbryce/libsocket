@@ -154,7 +154,7 @@ int socket_dispatch(socket_context_t *socket_context, void (*handle_client)(sock
 
     }
 
-    struct epoll_event event, events[32];
+    struct epoll_event event, events[4096];
     memset(&event, 0, sizeof(struct epoll_event));
     memset(&events, 0, sizeof(struct epoll_event));
     event.events = EPOLLIN;
@@ -170,7 +170,7 @@ int socket_dispatch(socket_context_t *socket_context, void (*handle_client)(sock
     while (1) {
 
         int file_descriptors;
-        if ((file_descriptors = epoll_wait(epoll_descriptor, events, 32, -1)) == -1) {
+        if ((file_descriptors = epoll_wait(epoll_descriptor, events, 4096, -1)) == -1) {
 
             close(socket_context->socket_descriptor);
             close(epoll_descriptor);
@@ -183,12 +183,18 @@ int socket_dispatch(socket_context_t *socket_context, void (*handle_client)(sock
             /* There's a new connection! */
             int client_socket_descriptor;
             unsigned int sockaddr_length = sizeof(struct sockaddr_in);
+            if (fork() != 0) {
+
+                continue; 
+
+            }
+
             if (events[i].data.fd == socket_context->socket_descriptor) {
 
                 struct sockaddr_in6 clientaddr;
                 if (socket_context->sockaddr->sa_family == AF_INET) {
 
-                    if (client_socket_descriptor = accept(socket_context->socket_descriptor, (struct sockaddr *) &clientaddr, &sockaddr_length)) {
+                    if ((client_socket_descriptor = accept(socket_context->socket_descriptor, (struct sockaddr *) &clientaddr, &sockaddr_length)) == -1) {
 
                         continue;
 
@@ -196,7 +202,7 @@ int socket_dispatch(socket_context_t *socket_context, void (*handle_client)(sock
 
                 } else {
 
-                    if (client_socket_descriptor = accept(socket_context->socket_descriptor, (struct sockaddr *) &clientaddr, &sockaddr_length)) {
+                    if ((client_socket_descriptor = accept(socket_context->socket_descriptor, (struct sockaddr *) &clientaddr, &sockaddr_length)) == -1) {
 
                         continue;
 
@@ -248,6 +254,9 @@ int socket_dispatch(socket_context_t *socket_context, void (*handle_client)(sock
 
                 }
 
+                exit(EXIT_SUCCESS);
+                printf("HI IM IN DANGER");
+
             } else {
 
                 client_socket_descriptor = events[i].data.fd;
@@ -255,9 +264,9 @@ int socket_dispatch(socket_context_t *socket_context, void (*handle_client)(sock
                 memset(&socket_dispatch, 0, sizeof(socket_dispatch));
                 socket_dispatch.socket_context = socket_context;
                 socket_dispatch.client_sock_descriptor = client_socket_descriptor;
-                pthread_t thread;
-                pthread_create(&thread, NULL, (void*) handle_client, (void *)&socket_dispatch);
-                pthread_detach(thread);
+                handle_client(socket_dispatch);
+                exit(EXIT_SUCCESS);
+                printf("HI IM IN DANGER");
 
             }
 
