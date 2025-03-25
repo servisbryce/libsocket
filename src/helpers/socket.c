@@ -8,6 +8,26 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+void unblock_socket_file_descriptor(int socket) {
+
+    int flags;
+    if ((flags = fcntl(socket_context->socket_descriptor, F_GETFL, 0)) == -1) {
+    
+        close(socket_context->socket_descriptor);
+        return -1;
+    
+    }    
+
+    flags |= O_NONBLOCK;
+    if (fnctl(socket_context->socket_descriptor, F_SETFL, flags) == -1) {
+
+        close(socket_context->socket_descriptor);
+        return -1;
+
+    }
+
+}
+
 int create_socket(socket_context_t *socket_context) {
 
     if (!socket_context || !socket_context->address || !socket_context->port || !socket_context->sockaddr) {
@@ -23,22 +43,6 @@ int create_socket(socket_context_t *socket_context) {
     }
 
     if (socket_context->isserver) {
-
-        int flags;
-        if ((flags = fcntl(socket_context->socket_descriptor, F_GETFL, 0)) == -1) {
-    
-            close(socket_context->socket_descriptor);
-            return -1;
-    
-        }    
-
-        flags |= O_NONBLOCK;
-        if (fnctl(socket_context->socket_descriptor, F_SETFL, flags) == -1) {
-
-            close(socket_context->socket_descriptor);
-            return -1;
-
-        }
 
         int option = 1;
         if (setsockopt(socket_context->socket_descriptor, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &option, sizeof(option))) {
@@ -158,7 +162,47 @@ int socket_dispatch(socket_context_t *socket_context, void (*f)(socket_dispatch_
 
     while (1) {
 
-        
+        int file_descriptors;
+        if ((file_descriptors = epoll_wait(epoll_descriptor, events, 32, -1)) == -1) {
+
+            close(socket_context->socket_descriptor);
+            close(epoll_descriptor);
+            return -1;
+
+        }
+
+        for (int i = 0; i < file_descriptors; i++) {
+
+            /* There's a new connection! */
+            if (events[i].data.fd == socket_context->socket_descriptor) {
+
+                int client_socket_descriptor;
+                struct sockaddr_in6 clientaddr;
+                if (socket_context->sockaddr->sa_family == AF_INET) {
+
+                    if (client_socket_descriptor = accept(socket_context->socket_descriptor, (struct sockaddr *) &clientaddr, sizeof(struct sockaddr_in))) {
+
+                        continue;
+
+                    }
+
+                } else {
+
+                    if (client_socket_descriptor = accept(socket_context->socket_descriptor, (struct sockaddr *) &clientaddr, sizeof(struct sockaddr_in6))) {
+
+                        continue;
+
+                    }
+
+                }
+
+            } else {
+
+
+
+            }
+
+        }
 
     }
     
