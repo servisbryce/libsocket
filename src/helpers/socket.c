@@ -1,9 +1,12 @@
 #include "../../include/context.h"
+#include "../../include/socket.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <sys/epoll.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 int create_socket(socket_context_t *socket_context) {
 
@@ -21,21 +24,48 @@ int create_socket(socket_context_t *socket_context) {
 
     if (socket_context->isserver) {
 
+        int flags;
+        if ((flags = fcntl(socket_context->socket_descriptor, F_GETFL, 0)) == -1) {
+    
+            close(socket_context->socket_descriptor);
+            return -1;
+    
+        }    
+
+        flags |= O_NONBLOCK;
+        if (fnctl(socket_context->socket_descriptor, F_SETFL, flags) == -1) {
+
+            close(socket_context->socket_descriptor);
+            return -1;
+
+        }
+
         int option = 1;
         if (setsockopt(socket_context->socket_descriptor, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &option, sizeof(option))) {
 
+            close(socket_context->socket_descriptor);
             return -1;
 
         }
 
         if (bind(socket_context->socket_descriptor, socket_context->sockaddr, sizeof(struct sockaddr_in)) < 0) {
 
+            close(socket_context->socket_descriptor);
             return -1;
 
         }
 
         if (listen(socket_context->socket_descriptor, 4096) < 0) {
 
+            close(socket_context->socket_descriptor);
+            return -1;
+
+        }
+
+        int epoll_descriptor;
+        if ((epoll_descriptor = epoll_create1(0)) == -1) {
+
+            close(socket_context->socket_descriptor);
             return -1;
 
         }
@@ -103,4 +133,16 @@ int create_socket(socket_context_t *socket_context) {
 
     }
 
+}
+
+int socket_dispatch(socket_context_t *socket_context, void (*f)(socket_dispatch_vargs_t) ) {
+
+    if (!socket_context || !socket_context->isserver) {
+
+        return -1;
+
+    }
+
+    
+    
 }
