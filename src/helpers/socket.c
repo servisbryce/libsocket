@@ -202,6 +202,50 @@ int socket_dispatch(socket_context_t *socket_context, void (*f)(socket_dispatch_
 
                 }
 
+                if (unblock_socket_file_descriptor(client_socket_descriptor) == -1) {
+
+                    continue;
+
+                }
+
+                event.events = EPOLLIN | EPOLLET;
+                event.data.fd = client_socket_descriptor;
+                if (epoll_ctl(epoll_descriptor, EPOLL_CTL_ADD, client_socket_descriptor, &event) == -1) {
+
+                    close(client_socket_descriptor);
+                    continue;
+
+                }
+
+                if (socket_context->tls_context) {
+
+                    BIO *bio;
+                    if (!(bio = BIO_new_socket(client_socket_descriptor, BIO_NOCLOSE))) {
+
+                        close(client_socket_descriptor);
+                        continue;
+
+                    }
+
+                    SSL *ssl;
+                    if (!(ssl = SSL_new(socket_context->tls_context->openssl_context))) {
+
+                        close(client_socket_descriptor);
+                        continue;
+
+                    }
+
+                    /* Perform the handshake. */
+                    SSL_set_bio(ssl, bio, bio);
+                    if (SSL_accept(ssl) <= 0) {
+
+                        SSL_free(ssl);
+                        continue;
+
+                    }
+
+                }
+
             } else {
 
 
