@@ -3,6 +3,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/epoll.h>
+#include <pthread.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -19,7 +20,7 @@ int unblock_socket_file_descriptor(int socket) {
     }    
 
     flags |= O_NONBLOCK;
-    if (fnctl(socket, F_SETFL, flags) == -1) {
+    if (fcntl(socket, F_SETFL, flags) == -1) {
 
         close(socket);
         return -1;
@@ -137,7 +138,7 @@ int create_socket(socket_context_t *socket_context) {
 
 }
 
-int socket_dispatch(socket_context_t *socket_context, void (*f)(socket_dispatch_vargs_t) ) {
+int socket_dispatch(socket_context_t *socket_context, void (*handle_client)(socket_dispatch_vargs_t) ) {
 
     if (!socket_context || !socket_context->isserver) {
 
@@ -180,13 +181,14 @@ int socket_dispatch(socket_context_t *socket_context, void (*f)(socket_dispatch_
         for (int i = 0; i < file_descriptors; i++) {
 
             /* There's a new connection! */
+            int client_socket_descriptor;
+            unsigned int sockaddr_length = sizeof(struct sockaddr_in);
             if (events[i].data.fd == socket_context->socket_descriptor) {
 
-                int client_socket_descriptor;
                 struct sockaddr_in6 clientaddr;
                 if (socket_context->sockaddr->sa_family == AF_INET) {
 
-                    if (client_socket_descriptor = accept(socket_context->socket_descriptor, (struct sockaddr *) &clientaddr, sizeof(struct sockaddr_in))) {
+                    if (client_socket_descriptor = accept(socket_context->socket_descriptor, (struct sockaddr *) &clientaddr, &sockaddr_length)) {
 
                         continue;
 
@@ -194,7 +196,7 @@ int socket_dispatch(socket_context_t *socket_context, void (*f)(socket_dispatch_
 
                 } else {
 
-                    if (client_socket_descriptor = accept(socket_context->socket_descriptor, (struct sockaddr *) &clientaddr, sizeof(struct sockaddr_in6))) {
+                    if (client_socket_descriptor = accept(socket_context->socket_descriptor, (struct sockaddr *) &clientaddr, &sockaddr_length)) {
 
                         continue;
 
@@ -248,7 +250,14 @@ int socket_dispatch(socket_context_t *socket_context, void (*f)(socket_dispatch_
 
             } else {
 
-
+                client_socket_descriptor = events[i].data.fd;
+                socket_dispatch_vargs_t socket_dispatch;
+                memset(&socket_dispatch, 0, sizeof(socket_dispatch));
+                socket_dispatch.socket_context = socket_context;
+                socket_dispatch.client_sock_descriptor = client_socket_descriptor;
+                pthread_t thread;
+                pthread_create(&thread, NULL, (void*) handle_client, (void *)&socket_dispatch);
+                pthread_detach(thread);
 
             }
 
