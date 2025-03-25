@@ -7,7 +7,7 @@
 
 int create_socket(socket_context_t *socket_context) {
 
-    if (!socket_context->address || !socket_context->port || !socket_context->sockaddr) {
+    if (!socket_context || !socket_context->address || !socket_context->port || !socket_context->sockaddr) {
 
         return -1;
 
