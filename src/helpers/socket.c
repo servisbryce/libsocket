@@ -1,5 +1,6 @@
 #include "../../include/context.h"
 #include "../../include/socket.h"
+#include "openssl/err.h"
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <sys/epoll.h>
@@ -58,11 +59,11 @@ int create_socket(socket_context_t *socket_context) {
 
     if (socket_context->isserver) {
 
-        if (unblock_socket_file_descriptor(socket_context->socket_descriptor) == -1) {
+        /*if (unblock_socket_file_descriptor(socket_context->socket_descriptor) == -1) {
 
             return -1;
 
-        }
+        }*/
 
         int option = 1;
         if (setsockopt(socket_context->socket_descriptor, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT, &option, sizeof(option))) {
@@ -97,53 +98,7 @@ int create_socket(socket_context_t *socket_context) {
 
         if (socket_context->tls_context) {
 
-            if (!(socket_context->tls_context->openssl_bio = BIO_new_socket(socket_context->socket_descriptor, BIO_NOCLOSE))) {
-
-                close(socket_context->socket_descriptor);
-                return -1;
-
-            }
-
-            if (!(socket_context->tls_context->openssl_instance = SSL_new(socket_context->tls_context->openssl_context))) {
-
-                BIO_free(socket_context->tls_context->openssl_bio);
-                close(socket_context->socket_descriptor);
-                return -1;
-
-            }
-
-            /* If we're connecting to a server via domain name services, we should run some checks on the corresponding certificate to ensure everything is hardened. */
-            if (socket_context->addressisdomain) {
-
-                if (!SSL_set_tlsext_host_name(socket_context->tls_context->openssl_instance, socket_context->address)) {
-
-                    BIO_free(socket_context->tls_context->openssl_bio);
-                    SSL_free(socket_context->tls_context->openssl_instance);
-                    close(socket_context->socket_descriptor);
-                    return -1;
-
-                }
-
-                if (!SSL_set1_host(socket_context->tls_context->openssl_instance, socket_context->address)) {
-
-                    BIO_free(socket_context->tls_context->openssl_bio);
-                    SSL_free(socket_context->tls_context->openssl_instance);
-                    close(socket_context->socket_descriptor);
-                    return -1;
-
-                }
-
-            }
-
-            int handshake_result;
-            SSL_set_bio(socket_context->tls_context->openssl_instance, socket_context->tls_context->openssl_bio, socket_context->tls_context->openssl_bio);
-            if ((handshake_result = SSL_connect(socket_context->tls_context->openssl_instance)) < 1) {
-
-                SSL_free(socket_context->tls_context->openssl_instance);
-                close(socket_context->socket_descriptor);
-                return -1;
-
-            }
+            //rewrite later
 
         }
 
@@ -236,40 +191,7 @@ int socket_dispatch(socket_context_t *socket_context, void (*handle_client)(sock
 
                 }
 
-                if (socket_context->tls_context) {
-
-                    BIO *bio;
-                    if (!(bio = BIO_new_socket(client_socket_descriptor, BIO_NOCLOSE))) {
-
-                        free(clientaddr);
-                        close(client_socket_descriptor);
-                        continue;
-
-                    }
-
-                    SSL *ssl;
-                    if (!(ssl = SSL_new(socket_context->tls_context->openssl_context))) {
-
-                        free(clientaddr);
-                        close(client_socket_descriptor);
-                        continue;
-
-                    }
-
-                    /* Perform the handshake. */
-                    SSL_set_bio(ssl, bio, bio);
-                    if (SSL_accept(ssl) <= 0) {
-
-                        free(clientaddr);
-                        SSL_free(ssl);
-                        continue;
-
-                    }
-
-                }
-
                 free(clientaddr);
-                continue;
 
             } else {
 

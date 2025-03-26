@@ -2,7 +2,6 @@
 #define CONTEXT_H_
 
 #include <openssl/ssl.h>
-#include <openssl/bio.h>
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -12,7 +11,6 @@ typedef struct tls_context {
     /* You shouldn't interact with these variables unless through a function in this library. */
     SSL_CTX *openssl_context;
     int openssl_tls_cache_id;
-    BIO *openssl_bio;
 
     /* You shouldn't interact with this. This is for client-mode only. */
     SSL *openssl_instance;
