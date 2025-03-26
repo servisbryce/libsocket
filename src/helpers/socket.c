@@ -43,6 +43,17 @@ int create_socket(socket_context_t *socket_context) {
 
     }
 
+    size_t sockaddr_length = 0;
+    if (socket_context->sockaddr->sa_family == AF_INET) {
+
+        sockaddr_length = sizeof(struct sockaddr_in);
+
+    } else {
+
+        sockaddr_length = sizeof(struct sockaddr_in6);
+
+    }
+
     if (socket_context->isserver) {
 
         if (unblock_socket_file_descriptor(socket_context->socket_descriptor) == -1) {
@@ -59,7 +70,7 @@ int create_socket(socket_context_t *socket_context) {
 
         }
 
-        if (bind(socket_context->socket_descriptor, socket_context->sockaddr, sizeof(struct sockaddr_in)) < 0) {
+        if (bind(socket_context->socket_descriptor, socket_context->sockaddr, sockaddr_length) < 0) {
 
             close(socket_context->socket_descriptor);
             return -1;
@@ -75,7 +86,7 @@ int create_socket(socket_context_t *socket_context) {
 
     } else {
 
-        if (connect(socket_context->socket_descriptor, socket_context->sockaddr, sizeof(struct sockaddr_in)) < 0) {
+        if (connect(socket_context->socket_descriptor, socket_context->sockaddr, sockaddr_length) < 0) {
 
             close(socket_context->socket_descriptor);
             return -1;
@@ -154,6 +165,17 @@ int socket_dispatch(socket_context_t *socket_context, void (*handle_client)(sock
 
     }
 
+    unsigned int sockaddr_length = 0;
+    if (socket_context->sockaddr->sa_family == AF_INET) {
+
+        sockaddr_length = sizeof(struct sockaddr_in);
+
+    } else {
+
+        sockaddr_length = sizeof(struct sockaddr_in6);
+
+    }
+
     struct epoll_event event, events[4096];
     memset(&event, 0, sizeof(struct epoll_event));
     memset(&events, 0, sizeof(struct epoll_event));
@@ -182,7 +204,6 @@ int socket_dispatch(socket_context_t *socket_context, void (*handle_client)(sock
 
             /* There's a new connection! */
             int client_socket_descriptor;
-            unsigned int sockaddr_length = sizeof(struct sockaddr_in);
             if (fork() != 0) {
 
                 continue; 
@@ -191,7 +212,17 @@ int socket_dispatch(socket_context_t *socket_context, void (*handle_client)(sock
 
             if (events[i].data.fd == socket_context->socket_descriptor) {
 
-                struct sockaddr_in6 clientaddr;
+                struct sockaddr *clientaddr = NULL;
+                if (sockaddr_length = sizeof(struct sockaddr_in)) {
+
+                    clientaddr = (struct sockaddr*) malloc(sizeof(struct sockaddr_in));
+
+                } else {
+
+                    clientaddr = (struct sockaddr*) malloc(sizeof(struct sockaddr_in6));
+
+                }
+
                 if (socket_context->sockaddr->sa_family == AF_INET) {
 
                     if ((client_socket_descriptor = accept(socket_context->socket_descriptor, (struct sockaddr *) &clientaddr, &sockaddr_length)) == -1) {
@@ -254,6 +285,7 @@ int socket_dispatch(socket_context_t *socket_context, void (*handle_client)(sock
 
                 }
 
+                free(clientaddr);
                 exit(EXIT_SUCCESS);
 
             } else {
