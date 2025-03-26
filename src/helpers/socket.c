@@ -213,31 +213,10 @@ int socket_dispatch(socket_context_t *socket_context, void (*handle_client)(sock
             if (events[i].data.fd == socket_context->socket_descriptor) {
 
                 struct sockaddr *clientaddr = NULL;
-                if (sockaddr_length = sizeof(struct sockaddr_in)) {
+                clientaddr = (struct sockaddr*) malloc(sockaddr_length);
+                if ((client_socket_descriptor = accept(socket_context->socket_descriptor, clientaddr, &sockaddr_length)) == -1) {
 
-                    clientaddr = (struct sockaddr*) malloc(sizeof(struct sockaddr_in));
-
-                } else {
-
-                    clientaddr = (struct sockaddr*) malloc(sizeof(struct sockaddr_in6));
-
-                }
-
-                if (socket_context->sockaddr->sa_family == AF_INET) {
-
-                    if ((client_socket_descriptor = accept(socket_context->socket_descriptor, (struct sockaddr *) &clientaddr, &sockaddr_length)) == -1) {
-
-                        continue;
-
-                    }
-
-                } else {
-
-                    if ((client_socket_descriptor = accept(socket_context->socket_descriptor, (struct sockaddr *) &clientaddr, &sockaddr_length)) == -1) {
-
-                        continue;
-
-                    }
+                    continue;
 
                 }
 
