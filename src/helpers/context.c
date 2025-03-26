@@ -179,8 +179,8 @@ int create_tls_context(socket_context_t *socket_context, char *chained_certifica
         /* Enforce the systems default paths for certificate authorities. */
         if (!SSL_CTX_set_default_verify_paths(tls_context->openssl_context)) {
 
-            free(tls_context);
             SSL_CTX_free(tls_context->openssl_context);
+            free(tls_context);
 
         }
 
