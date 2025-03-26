@@ -284,6 +284,12 @@ void free_socket_context(socket_context_t **socket_context) {
 
     }
 
+    if ((*socket_context)->sockaddr) {
+
+        free((*socket_context)->sockaddr);
+
+    }
+
     /* Free the TLS context, if it exists. */
     if ((*socket_context)->tls_context) {
 
