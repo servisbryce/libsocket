@@ -204,25 +204,15 @@ int socket_dispatch(socket_context_t *socket_context, void (*handle_client)(sock
 
             /* There's a new connection! */
             int client_socket_descriptor;
-            if (fork() != 0) {
-
-                continue; 
-
-            }
-
             if (events[i].data.fd == socket_context->socket_descriptor) {
 
                 struct sockaddr *clientaddr = NULL;
                 clientaddr = (struct sockaddr*) malloc(sockaddr_length);
                 if ((client_socket_descriptor = accept(socket_context->socket_descriptor, clientaddr, &sockaddr_length)) == -1) {
 
-                    continue;
-
-                }
-
-                if (unblock_socket_file_descriptor(client_socket_descriptor) == -1) {
-
-                    continue;
+                    perror("the whale");
+                    printf("flag 1\n");
+                    //exit(EXIT_FAILURE);
 
                 }
 
@@ -230,8 +220,9 @@ int socket_dispatch(socket_context_t *socket_context, void (*handle_client)(sock
                 event.data.fd = client_socket_descriptor;
                 if (epoll_ctl(epoll_descriptor, EPOLL_CTL_ADD, client_socket_descriptor, &event) == -1) {
 
+                    printf("flag 3\n");
                     close(client_socket_descriptor);
-                    continue;
+                    //exit(EXIT_FAILURE);
 
                 }
 
@@ -241,7 +232,7 @@ int socket_dispatch(socket_context_t *socket_context, void (*handle_client)(sock
                     if (!(bio = BIO_new_socket(client_socket_descriptor, BIO_NOCLOSE))) {
 
                         close(client_socket_descriptor);
-                        continue;
+                        exit(EXIT_FAILURE);
 
                     }
 
@@ -249,7 +240,7 @@ int socket_dispatch(socket_context_t *socket_context, void (*handle_client)(sock
                     if (!(ssl = SSL_new(socket_context->tls_context->openssl_context))) {
 
                         close(client_socket_descriptor);
-                        continue;
+                        exit(EXIT_FAILURE);
 
                     }
 
@@ -258,17 +249,24 @@ int socket_dispatch(socket_context_t *socket_context, void (*handle_client)(sock
                     if (SSL_accept(ssl) <= 0) {
 
                         SSL_free(ssl);
-                        continue;
+                        exit(EXIT_FAILURE);
 
                     }
 
                 }
 
+                printf("flag5\n");
                 free(clientaddr);
-                exit(EXIT_SUCCESS);
+                //exit(EXIT_SUCCESS);
 
             } else {
 
+                if (fork() != 0) {
+
+                    continue; 
+    
+                }
+    
                 client_socket_descriptor = events[i].data.fd;
                 socket_dispatch_vargs_t socket_dispatch;
                 memset(&socket_dispatch, 0, sizeof(socket_dispatch));

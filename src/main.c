@@ -9,6 +9,7 @@
 
 void handle(socket_dispatch_vargs_t hi) {
 
+    printf("hello\n");
     close(hi.client_sock_descriptor);
     return;
 
@@ -22,7 +23,6 @@ void main() {
 
     printf("%d\n", bad->sin_port);
     printf("%d\n", create_socket(context));
-    perror("hi");
     socket_dispatch(context, handle);
 
 }
