@@ -1,6 +1,7 @@
 #include <netinet/in.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <stddef.h>
 #include <string.h>
@@ -17,7 +18,7 @@
 
 */
 
-int create_sockaddr(char *address, struct sockaddr **sockaddr) {
+int create_sockaddr(char *address, uint16_t port, struct sockaddr **sockaddr) {
 
     /* Determine the address of the host that we're discovering. */
     struct addrinfo *response = NULL;
@@ -33,8 +34,34 @@ int create_sockaddr(char *address, struct sockaddr **sockaddr) {
     }
 
     /* Construct the socket address and pass the data to the user. */
-    struct sockaddr *result = response->ai_addr;
-    *sockaddr = result;
+    size_t length = 0;
+    if (response->ai_addr->sa_family == AF_INET) {
+
+        length = sizeof(struct sockaddr_in);
+
+    } else {
+
+        length = sizeof(struct sockaddr_in6);
+
+    }
+
+    struct sockaddr *sockaddr_response = (struct sockaddr*) malloc(length);
+    sockaddr_response = (struct sockaddr*) memcpy(sockaddr_response, response->ai_addr, length);
+    if (response->ai_addr->sa_family == AF_INET) {
+
+        struct sockaddr_in *sockaddr_in_response = (struct sockaddr_in*) sockaddr_response;
+        sockaddr_in_response->sin_port = htons(port);
+        sockaddr_response = (struct sockaddr*) sockaddr_in_response;
+
+    } else {
+
+        struct sockaddr_in6 *sockaddr_in6_response = (struct sockaddr_in6*) sockaddr_response;
+        sockaddr_in6_response->sin6_port = htons(port);
+        sockaddr_response = (struct sockaddr*) sockaddr_in6_response;
+
+    }
+
+    *sockaddr = sockaddr_response;
 
     /* Return our memory back to the user and declare success. */
     freeaddrinfo(response);

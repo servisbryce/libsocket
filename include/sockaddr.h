@@ -4,6 +4,6 @@
 #include <sys/socket.h>
 #include <stdint.h>
 
-int create_sockaddr(char *address, struct sockaddr **sockaddr);
+int create_sockaddr(char *address, uint16_t port, struct sockaddr **sockaddr);
 
 #endif

@@ -34,7 +34,7 @@ int create_socket_context(char *address, uint16_t port, bool isserver, socket_co
     /* Create our prerequisite structures. */
     socket_context_t *result = NULL;
     struct sockaddr *sockaddr = NULL;
-    if (create_sockaddr(address, &sockaddr) != 0) {
+    if (create_sockaddr(address, port, &sockaddr) != 0) {
 
         return -1;
 

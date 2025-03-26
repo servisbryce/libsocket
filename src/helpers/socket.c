@@ -255,7 +255,6 @@ int socket_dispatch(socket_context_t *socket_context, void (*handle_client)(sock
                 }
 
                 exit(EXIT_SUCCESS);
-                printf("HI IM IN DANGER");
 
             } else {
 
@@ -266,7 +265,6 @@ int socket_dispatch(socket_context_t *socket_context, void (*handle_client)(sock
                 socket_dispatch.client_sock_descriptor = client_socket_descriptor;
                 handle_client(socket_dispatch);
                 exit(EXIT_SUCCESS);
-                printf("HI IM IN DANGER");
 
             }
 
