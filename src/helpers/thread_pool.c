@@ -1,8 +1,7 @@
 #include "../../include/thread_pool.h"
+#include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <stdbool.h>
-#include <stdio.h>
 
 void *thread_worker(void *thread_worker_vargs) {
 
@@ -46,7 +45,7 @@ void *thread_worker(void *thread_worker_vargs) {
     }
 
     thread_pool->thread_worker_count--;
-    pthread_cond_signal(&(thread_pool->thread_work_condition));
+    pthread_cond_signal(&(thread_pool->thread_working_condition));
     pthread_mutex_unlock(&(thread_pool->thread_work_mutex));
     return NULL;
 
@@ -122,10 +121,9 @@ int thread_pool_wait(thread_pool_t *thread_pool) {
     pthread_mutex_lock(&(thread_pool->thread_work_mutex));
     while (1) {
 
-        printf("wsp\n");
         if (thread_pool->thread_work_head || (!thread_pool->halt && thread_pool->thread_working_count != 0) || (thread_pool->halt && thread_pool->thread_worker_count != 0)) {
 
-            pthread_cond_wait(&(thread_pool->thread_work_condition), &(thread_pool->thread_work_mutex));
+            pthread_cond_wait(&(thread_pool->thread_working_condition), &(thread_pool->thread_work_mutex));
 
         } else {
 
@@ -174,28 +172,5 @@ int thread_pool_destroy(thread_pool_t *thread_pool) {
     pthread_cond_destroy(&(thread_pool->thread_working_condition));
     free(thread_pool);
     return 0;
-
-}
-
-void print(void *args) {
-
-    printf("printf\n");
-    return;
-
-}
-
-void main() {
-
-    thread_pool_t *thread_pool = thread_pool_create(16);
-    for (int i = 0; i < 64; i++) {
-
-        thread_pool_assign_work(thread_pool, print, NULL);
-
-    }
-
-    thread_pool_wait(thread_pool);
-    thread_pool_destroy(thread_pool);
-    printf("all done;");
-    exit(EXIT_SUCCESS);
 
 }
