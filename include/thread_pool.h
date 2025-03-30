@@ -19,7 +19,7 @@ typedef struct thread_pool {
     pthread_cond_t thread_work_condition;
     thread_work_t *thread_work_head;
     thread_work_t *thread_work_tail;
-    size_t thread_working_condition_count;
+    size_t thread_working_count;
     size_t thread_worker_count;
     bool halt;
 
