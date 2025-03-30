@@ -52,7 +52,7 @@ SSL_CTX *create_tls_server_context(char *chain_certificate_file, char *certifica
 
     }
 
-    SSL_set_session_id_context(context, (void *) &cache_id, sizeof(cache_id));
+    SSL_CTX_set_session_id_context(context, (void *) &cache_id, sizeof(cache_id));
     SSL_CTX_set_session_cache_mode(context, SSL_SESS_CACHE_SERVER);
     SSL_CTX_sess_set_cache_size(context, 32768);
     SSL_CTX_set_timeout(context, 1800);
