@@ -2,6 +2,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdio.h>
 
 void *thread_worker(void *thread_worker_vargs) {
 
