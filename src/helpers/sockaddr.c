@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <netdb.h>
 
-struct sockaddr *create_sockaddr(void *address, uint16_t port) {
+struct sockaddr *create_sockaddr(char *address, uint16_t port) {
 
     if (!address || port <= 0) {
 

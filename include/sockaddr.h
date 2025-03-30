@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-struct sockaddr *create_sockaddr(void *address, uint16_t port);
+struct sockaddr *create_sockaddr(char *address, uint16_t port);
 void destroy_sockaddr(struct sockaddr *sockaddr);
 
 #endif
