@@ -8,7 +8,7 @@ typedef struct thread_work {
 
     struct thread_work *next;
     void *routine_vargs;
-    void *routine;
+    void (*routine)(void *routine_vargs);
 
 } thread_work_t;
 
@@ -20,7 +20,7 @@ typedef struct thread_pool {
     thread_work_t *thread_work_head;
     thread_work_t *thread_work_tail;
     size_t thread_working_condition_count;
-    size_t thread_work_condition_count;
+    size_t thread_worker_count;
     bool halt;
 
 } thread_pool_t;
