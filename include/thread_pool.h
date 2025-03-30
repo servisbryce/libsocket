@@ -25,4 +25,9 @@ typedef struct thread_pool {
 
 } thread_pool_t;
 
+thread_pool_t *thread_pool_create(size_t threads);
+int thread_pool_assign_work(thread_pool_t *thread_pool, void (*routine)(void *vargs), void *routine_vargs);
+int thread_pool_wait(thread_pool_t *thread_pool);
+int thread_pool_destroy(thread_pool_t *thread_pool);
+
 #endif
