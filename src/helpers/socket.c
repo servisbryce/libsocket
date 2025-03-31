@@ -3,6 +3,12 @@
 
 int create_socket(struct sockaddr *sockaddr) {
 
+    if (!sockaddr) {
+
+        return -1;
+
+    }
+
     int socket_file_descriptor;
     if ((socket_file_descriptor = socket(sockaddr->sa_family, SOCK_STREAM, 0) == -1)) {
 
@@ -40,5 +46,18 @@ int create_socket(struct sockaddr *sockaddr) {
     }
 
     return socket_file_descriptor;
+
+}
+
+void destroy_socket(int socket_file_descriptor) {
+
+    if (socket_file_descriptor < 0) {
+
+        return;
+
+    }
+
+    close(socket_file_descriptor);
+    return;
 
 }
