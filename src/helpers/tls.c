@@ -4,7 +4,7 @@
 
 SSL_CTX *create_ssl_server_context(char *chain_certificate_file, char *private_key_file, int cache_id) {
 
-    if ((!chain_certificate_file && !private_key_file) {
+    if (!chain_certificate_file && !private_key_file) {
 
         return NULL;
 
