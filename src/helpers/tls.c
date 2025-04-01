@@ -2,9 +2,9 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 
-SSL_CTX *create_tls_server_context(char *chain_certificate_file, char *certificate_file, char *private_key_file, int cache_id) {
+SSL_CTX *create_ssl_server_context(char *chain_certificate_file, char *private_key_file, int cache_id) {
 
-    if ((!chain_certificate_file && !certificate_file) || (chain_certificate_file && certificate_file) || !private_key_file) {
+    if ((!chain_certificate_file && !private_key_file) {
 
         return NULL;
 
@@ -25,23 +25,10 @@ SSL_CTX *create_tls_server_context(char *chain_certificate_file, char *certifica
     }
 
     SSL_CTX_set_options(context, SSL_OP_IGNORE_UNEXPECTED_EOF | SSL_OP_NO_RENEGOTIATION | SSL_OP_CIPHER_SERVER_PREFERENCE);
-    if (chain_certificate_file) {
+    if (SSL_CTX_use_certificate_chain_file(context, chain_certificate_file) <= 0) {
 
-        if (SSL_CTX_use_certificate_chain_file(context, chain_certificate_file) <= 0) {
-
-            SSL_CTX_free(context);
-            return NULL;
-
-        }
-
-    } else {
-
-        if (SSL_CTX_use_certificate_file(context, certificate_file, SSL_FILETYPE_PEM) <= 0) {
-
-            SSL_CTX_free(context);
-            return NULL;
-
-        }
+        SSL_CTX_free(context);
+        return NULL;
 
     }
 
@@ -61,7 +48,7 @@ SSL_CTX *create_tls_server_context(char *chain_certificate_file, char *certifica
 
 }
 
-void destroy_tls_context(SSL_CTX *context) {
+void destroy_ssl_server_context(SSL_CTX *context) {
 
     if (!context) {
 

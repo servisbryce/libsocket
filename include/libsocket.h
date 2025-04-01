@@ -4,13 +4,13 @@
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/bio.h>
+#include <sys/socket.h>
 
 typedef struct tls_server_context {
 
+    struct sockaddr *sockaddr;
     SSL_CTX *ssl_context;
     int socket;
-    SSL *ssl:
-    BIO *bio;
 
 } tls_server_context_t;
 
