@@ -1,5 +1,0 @@
-void *example_routine() {
-
-
-
-}
