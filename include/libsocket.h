@@ -10,6 +10,7 @@ typedef struct tls_server_context {
 
     struct sockaddr *sockaddr;
     SSL_CTX *ssl_context;
+    size_t threads;
     int socket;
 
 } tls_server_context_t;

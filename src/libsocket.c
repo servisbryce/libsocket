@@ -9,7 +9,13 @@
 
 int cache_id = 0;
 
-tls_server_context_t *create_tls_server_context(char *address, uint16_t port, char *chain_certificate_file, char *private_key_file) {
+tls_server_context_t *create_tls_server_context(char *address, uint16_t port, char *chain_certificate_file, char *private_key_file, size_t threads) {
+
+    if (!address || !chain_certificate_file || !private_key_file || threads == 0 || port == 0) {
+
+        return NULL;
+
+    }
 
     cache_id++;
     tls_server_context_t *tls_server_context = (tls_server_context_t*) malloc(sizeof(tls_server_context_t));
@@ -41,9 +47,44 @@ tls_server_context_t *create_tls_server_context(char *address, uint16_t port, ch
 
 }
 
+void destroy_tls_server_context(tls_server_context_t *tls_server_context) {
+
+    if (!tls_server_context) {
+
+        return;
+
+    }
+
+    close(tls_server_context->socket);
+    destroy_sockaddr(tls_server_context->sockaddr);
+    destroy_ssl_server_context(tls_server_context->ssl_context);
+    free(tls_server_context);
+    return;
+
+}
+
+int tls_server_listen(tls_server_context_t *tls_server_context) {
+
+    if (!tls_server_context || !tls_server_context->sockaddr || tls_server_context->socket < 0 || !tls_server_context->ssl_context) {
+
+        return -1;
+
+    }
+
+    BIO *server_bio = NULL;
+    if (!(server_bio = BIO_new_socket(tls_server_context->socket, BIO_CLOSE))) {
+
+        return -1;
+
+    }
+
+
+
+}
+
 void main() {
 
-    if (!(create_tls_server_context("127.0.0.1", 1000, "cert.pem", "key.pem"))) {
+    if (!(create_tls_server_context("127.0.0.1", 1000, "cert.pem", "key.pem", 1))) {
 
         perror("hi");
 
