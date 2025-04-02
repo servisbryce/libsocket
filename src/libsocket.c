@@ -26,7 +26,7 @@ tls_server_context_t *create_tls_server_context(char *address, uint16_t port, ch
 
     }
 
-    if (!(tls_server_context->sockaddr = create_sockaddr(address, port))) {
+    if (!(tls_server_context->sockaddr = create_sockaddr(address, port, &tls_server_context->sockaddr_length))) {
 
         destroy_ssl_server_context(tls_server_context->ssl_context);
         free(tls_server_context);
@@ -65,20 +65,20 @@ void destroy_tls_server_context(tls_server_context_t *tls_server_context) {
 
 int tls_server_listen(tls_server_context_t *tls_server_context) {
 
-    if (!tls_server_context || !tls_server_context->sockaddr || tls_server_context->socket < 0 || !tls_server_context->ssl_context) {
+    if (!tls_server_context || !tls_server_context->sockaddr || tls_server_context->socket < 0 || !tls_server_context->ssl_context || tls_server_context->threads == 0) {
 
         return -1;
 
     }
 
-    BIO *server_bio = NULL;
-    if (!(server_bio = BIO_new_socket(tls_server_context->socket, BIO_CLOSE))) {
+    while (1) {
 
-        return -1;
+        struct sockaddr
+        int client_socket = accept(tls_server_context->socket, )
 
     }
 
-
+    BIO_free(server_bio);
 
 }
 
