@@ -1,4 +1,8 @@
-#include "../include/*.h"
+#include "../include/thread_pool.h"
+#include "../include/libsocket.h"
+#include "../include/sockaddr.h"
+#include "../include/socket.h"
+#include "../include/tls.h"
 #include <stdint.h>
 #include <unistd.h>
 

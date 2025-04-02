@@ -22,7 +22,7 @@ CFLAGS = -Wall -Wextra -Iinclude -I/usr/include
 LDFLAGS = -L/usr/include -l ssl -l crypto
 
 # Source files
-SRCS = $(wildcard src/*/*.c) src/main.c
+SRCS = $(wildcard src/*/*.c) src/libsocket.c
 
 # Object files
 OBJS = $(SRCS:.c=.o)
