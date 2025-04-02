@@ -75,7 +75,7 @@ int tls_server_listen(tls_server_context_t *tls_server_context) {
     while (1) {
 
         struct sockaddr client_sockaddr;
-        socklen_t client_sockaddr_length = tls_server_context->sockaddr_length;
+        socklen_t client_sockaddr_length = *tls_server_context->sockaddr_length;
         int client_socket;
         if ((client_socket = accept(tls_server_context->socket, &client_sockaddr, &client_sockaddr_length)) < 0) {
 
@@ -117,19 +117,5 @@ int tls_server_listen(tls_server_context_t *tls_server_context) {
     }
 
     close(tls_server_context->socket);
-
-}
-
-void main() {
-
-    tls_server_context_t *a = NULL;
-    if (!(a = create_tls_server_context("127.0.0.1", 1000, "cert.pem", "key.pem", 1))) {
-
-        perror("hi");
-
-    }
-    int b = tls_server_listen(a);
-    perror("hi\n");
-    printf("%d\n", b);
 
 }
