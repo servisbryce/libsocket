@@ -1,6 +1,7 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <stdio.h>
 
 int create_socket(struct sockaddr *sockaddr) {
 
@@ -11,7 +12,7 @@ int create_socket(struct sockaddr *sockaddr) {
     }
 
     int socket_file_descriptor;
-    if ((socket_file_descriptor = socket(sockaddr->sa_family, SOCK_STREAM, 0) == -1)) {
+    if ((socket_file_descriptor = socket(sockaddr->sa_family, SOCK_STREAM, 0)) == -1) {
 
         return -1;
 
@@ -27,6 +28,7 @@ int create_socket(struct sockaddr *sockaddr) {
     int socket_options = SO_REUSEADDR | SO_REUSEPORT;
     if (setsockopt(socket_file_descriptor, SOL_SOCKET, socket_options, &socket_options, sizeof(socket_options)) == -1) {
 
+        printf("hi\n");
         close(socket_file_descriptor);
         return -1;
 

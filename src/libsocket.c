@@ -5,6 +5,7 @@
 #include "../include/tls.h"
 #include <stdint.h>
 #include <unistd.h>
+#include <error.h>
 
 int cache_id = 0;
 
@@ -42,7 +43,11 @@ tls_server_context_t *create_tls_server_context(char *address, uint16_t port, ch
 
 void main() {
 
-    create_tls_server_context("127.0.0.1", 1000, "cert.pem", "key.pem");
+    if (!(create_tls_server_context("127.0.0.1", 1000, "cert.pem", "key.pem"))) {
+
+        perror("hi");
+
+    }
     getchar();
 
 }

@@ -35,6 +35,7 @@ struct sockaddr *create_sockaddr(char *address, uint16_t port) {
 
     struct sockaddr *sockaddr = (struct sockaddr*) malloc(sockaddr_length);
     memcpy(sockaddr, response->ai_addr, sockaddr_length);
+    sockaddr->sa_family = response->ai_family;
     freeaddrinfo(response);
     return sockaddr;
 
