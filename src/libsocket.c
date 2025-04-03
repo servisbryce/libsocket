@@ -11,7 +11,7 @@ int cache_id = 0;
 
 tls_server_context_t *create_tls_server_context(char *address, uint16_t port, char *chain_certificate_file, char *private_key_file, size_t threads, void (*routine)(void *vargs), void *routine_vargs) {
 
-    if (!address || !chain_certificate_file || !private_key_file || threads == 0 || port == 0) {
+    if (!address || !chain_certificate_file || !private_key_file || threads == 0 || port == 0 || !routine) {
 
         return NULL;
 
@@ -44,6 +44,8 @@ tls_server_context_t *create_tls_server_context(char *address, uint16_t port, ch
     }
 
     tls_server_context->threads = threads;
+    tls_server_context->routine = routine;
+    tls_server_context->routine_vargs = routine_vargs;
     return tls_server_context;
 
 }
@@ -91,7 +93,7 @@ int tls_server_listen(tls_server_context_t *tls_server_context) {
         }
 
         BIO *client_bio = NULL;
-        if (!(client_bio = BIO_new_socket(client_socket, BIO_CLOSE))) {
+        if (!(client_bio = BIO_new_socket(client_socket, BIO_NOCLOSE))) {
 
             close(client_socket);
             continue;
@@ -110,17 +112,33 @@ int tls_server_listen(tls_server_context_t *tls_server_context) {
         SSL_set_bio(client_ssl, client_bio, client_bio);
         if (SSL_accept(client_ssl) <= 0) {
 
+            printf("help me\n");
             SSL_free(client_ssl);
-            BIO_free(client_bio);
             close(client_socket);
             continue;
 
         }
 
-        
+        if (thread_pool_assign_work(thread_pool, tls_server_context->routine, tls_server_context->routine_vargs) == -1) {
+
+            continue;
+
+        }
 
     }
 
-    close(tls_server_context->socket);
+}
+
+void *routine(void *arg) {
+
+    printf("hi bitch\n");
+
+}
+
+void main() {
+
+    tls_server_context_t *a = create_tls_server_context("127.0.0.1", 1025, "cert.pem", "key.pem", 32, (void *) routine, NULL);
+    tls_server_listen(a);
+    destroy_tls_server_context(a);
 
 }

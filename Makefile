@@ -18,7 +18,7 @@
 CC = gcc
 
 # Compiler flags
-CFLAGS = -Wall -Wextra -Iinclude -I/usr/include
+CFLAGS = -Wall -Wextra -Iinclude -I/usr/include -g
 LDFLAGS = -L/usr/include -l ssl -l crypto
 
 # Source files
