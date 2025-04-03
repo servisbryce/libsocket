@@ -67,11 +67,12 @@ thread_pool_t *thread_pool_create(size_t threads) {
     pthread_cond_init(&(thread_pool->thread_work_condition), NULL);
     thread_pool->thread_work_head = NULL;
     thread_pool->thread_work_tail = NULL;
+    thread_pool->halt = false;
 
     for (size_t i = 0; i < threads; i++) {
 
         pthread_t thread;
-        pthread_create(&thread, NULL, thread_worker, thread_pool);
+        pthread_create(&thread, NULL, thread_worker, (void *) thread_pool);
         pthread_detach(thread);
 
     }

@@ -13,7 +13,6 @@ typedef struct tls_server_context {
     size_t *sockaddr_length;
     size_t threads;
     void (*routine)(void *routine_vargs);
-    void *routine_vargs;
     int socket;
 
 } tls_server_context_t;

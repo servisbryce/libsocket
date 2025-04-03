@@ -9,7 +9,7 @@
 
 int cache_id = 0;
 
-tls_server_context_t *create_tls_server_context(char *address, uint16_t port, char *chain_certificate_file, char *private_key_file, size_t threads, void (*routine)(void *vargs), void *routine_vargs) {
+tls_server_context_t *create_tls_server_context(char *address, uint16_t port, char *chain_certificate_file, char *private_key_file, size_t threads, void (*routine)(void *vargs)) {
 
     if (!address || !chain_certificate_file || !private_key_file || threads == 0 || port == 0 || !routine) {
 
@@ -45,7 +45,6 @@ tls_server_context_t *create_tls_server_context(char *address, uint16_t port, ch
 
     tls_server_context->threads = threads;
     tls_server_context->routine = routine;
-    tls_server_context->routine_vargs = routine_vargs;
     return tls_server_context;
 
 }
@@ -118,7 +117,10 @@ int tls_server_listen(tls_server_context_t *tls_server_context) {
 
         }
 
-        if (thread_pool_assign_work(thread_pool, tls_server_context->routine, tls_server_context->routine_vargs) == -1) {
+        tls_worker_vargs_t *vargs = (tls_worker_vargs_t *) malloc(sizeof(tls_worker_vargs_t));
+        vargs->ssl = client_ssl;
+        vargs->bio = client_bio;
+        if (thread_pool_assign_work(thread_pool, tls_server_context->routine, (void *) vargs) == -1) {
 
             continue;
 
@@ -128,15 +130,18 @@ int tls_server_listen(tls_server_context_t *tls_server_context) {
 
 }
 
-void *routine(void *arg) {
+void routine(void *arg) {
 
-    printf("hi bitch\n");
+    tls_worker_vargs_t *a = (tls_worker_vargs_t *) arg;
+    SSL_write(a->ssl, "hi", 3);
+    SSL_shutdown(a->ssl);
+    SSL_free(a->ssl);
 
 }
 
 void main() {
 
-    tls_server_context_t *a = create_tls_server_context("127.0.0.1", 1025, "cert.pem", "key.pem", 32, (void *) routine, NULL);
+    tls_server_context_t *a = create_tls_server_context("127.0.0.1", 1025, "cert.pem", "key.pem", 32, routine);
     tls_server_listen(a);
     destroy_tls_server_context(a);
 
