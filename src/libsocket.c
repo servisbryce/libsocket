@@ -72,6 +72,13 @@ int tls_server_listen(tls_server_context_t *tls_server_context) {
 
     }
 
+    thread_pool_t *thread_pool = NULL;
+    if (!(thread_pool = thread_pool_create(tls_server_context->threads))) {
+
+        return -1;
+
+    }
+
     while (1) {
 
         struct sockaddr client_sockaddr;
