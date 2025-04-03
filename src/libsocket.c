@@ -9,7 +9,7 @@
 
 int cache_id = 0;
 
-tls_server_context_t *create_tls_server_context(char *address, uint16_t port, char *chain_certificate_file, char *private_key_file, size_t threads) {
+tls_server_context_t *create_tls_server_context(char *address, uint16_t port, char *chain_certificate_file, char *private_key_file, size_t threads, void (*routine)(void *vargs), void *routine_vargs) {
 
     if (!address || !chain_certificate_file || !private_key_file || threads == 0 || port == 0) {
 
@@ -117,9 +117,7 @@ int tls_server_listen(tls_server_context_t *tls_server_context) {
 
         }
 
-        SSL_shutdown(client_ssl);
-        SSL_free(client_ssl);
-        close(client_socket);
+        
 
     }
 
