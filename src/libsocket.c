@@ -93,7 +93,7 @@ int tls_server_listen(tls_server_context_t *tls_server_context) {
         }
 
         BIO *client_bio = NULL;
-        if (!(client_bio = BIO_new_socket(client_socket, BIO_NOCLOSE))) {
+        if (!(client_bio = BIO_new_socket(client_socket, BIO_CLOSE))) {
 
             close(client_socket);
             continue;
@@ -112,7 +112,6 @@ int tls_server_listen(tls_server_context_t *tls_server_context) {
         SSL_set_bio(client_ssl, client_bio, client_bio);
         if (SSL_accept(client_ssl) <= 0) {
 
-            printf("help me\n");
             SSL_free(client_ssl);
             close(client_socket);
             continue;
