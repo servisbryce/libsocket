@@ -140,6 +140,7 @@ int tls_server_listen(tls_server_context_t *tls_server_context) {
 
     tls_server_context->thread_pool = thread_pool;
     thread_pool_assign_work(thread_pool, tls_server_orchestrator, (void *) tls_server_context);
+    return 0;
 
 }
 
