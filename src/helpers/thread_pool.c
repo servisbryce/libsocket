@@ -1,4 +1,5 @@
 #include "../../include/thread_pool.h"
+#include "../../include/tls.h"
 #include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -28,7 +29,15 @@ void *thread_worker(void *thread_worker_vargs) {
         pthread_mutex_unlock(&(thread_pool->thread_work_mutex));
         if (thread_work) {
 
-            thread_work->routine(thread_work->routine_vargs);
+            tls_worker_vargs_t *tls_worker_vargs = (tls_worker_vargs_t *) thread_work->routine_vargs;
+            if (!thread_work->routine((void *) tls_worker_vargs)) {
+
+                SSL_shutdown(tls_worker_vargs->ssl);
+                SSL_free(tls_worker_vargs->ssl);
+                
+            }
+
+            free(thread_work->routine_vargs);
             free(thread_work);
 
         }
@@ -81,7 +90,7 @@ thread_pool_t *thread_pool_create(size_t threads) {
 
 }
 
-int thread_pool_assign_work(thread_pool_t *thread_pool, void (*routine)(void *vargs), void *routine_vargs) {
+int thread_pool_assign_work(thread_pool_t *thread_pool, void *(*routine)(void *vargs), void *routine_vargs) {
 
     if (!thread_pool) {
 

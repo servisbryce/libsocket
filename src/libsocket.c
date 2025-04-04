@@ -85,7 +85,7 @@ int tls_server_listen(tls_server_context_t *tls_server_context) {
         struct sockaddr client_sockaddr;
         socklen_t client_sockaddr_length = *tls_server_context->sockaddr_length;
         int client_socket;
-        if ((client_socket = ac cept(tls_server_context->socket, &client_sockaddr, &client_sockaddr_length)) < 0) {
+        if ((client_socket = accept(tls_server_context->socket, &client_sockaddr, &client_sockaddr_length)) < 0) {
 
             continue;
 
@@ -120,7 +120,7 @@ int tls_server_listen(tls_server_context_t *tls_server_context) {
         tls_worker_vargs_t *vargs = (tls_worker_vargs_t *) malloc(sizeof(tls_worker_vargs_t));
         vargs->ssl = client_ssl;
         vargs->bio = client_bio;
-        if (thread_pool_assign_work(thread_pool, tls_server_context->routine, (void *) vargs) == -1) {
+        if (thread_pool_assign_work(thread_pool, (void *) tls_server_context->routine, (void *) vargs) == -1) {
 
             continue;
 
@@ -130,18 +130,17 @@ int tls_server_listen(tls_server_context_t *tls_server_context) {
 
 }
 
-void routine(void *arg) {
+void *routine(void *arg) {
 
     tls_worker_vargs_t *a = (tls_worker_vargs_t *) arg;
     SSL_write(a->ssl, "hi", 3);
-    SSL_shutdown(a->ssl);
-    SSL_free(a->ssl);
+    return NULL;
 
 }
 
 void main() {
 
-    tls_server_context_t *a = create_tls_server_context("127.0.0.1", 1025, "cert.pem", "key.pem", 32, routine);
+    tls_server_context_t *a = create_tls_server_context("127.0.0.1", 1025, "cert.pem", "key.pem", 32, (void *) routine);
     tls_server_listen(a);
     destroy_tls_server_context(a);
 

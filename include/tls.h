@@ -1,6 +1,10 @@
 #ifndef TLS_H_
 #define TLS_H_
 
+#include <openssl/ssl.h>
+#include <openssl/bio.h>
+#include <openssl/err.h>
+
 typedef struct tls_worker_vargs {
 
     BIO *bio;
