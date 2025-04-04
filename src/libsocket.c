@@ -51,7 +51,7 @@ tls_server_context_t *create_tls_server_context(char *address, uint16_t port, ch
 
 void destroy_tls_server_context(tls_server_context_t *tls_server_context) {
 
-    if (!tls_server_context) {
+    if (!tls_server_context || !tls_server_context->sockaddr || !tls_server_context->ssl_context) {
 
         return;
 
@@ -85,7 +85,7 @@ int tls_server_listen(tls_server_context_t *tls_server_context) {
         struct sockaddr client_sockaddr;
         socklen_t client_sockaddr_length = *tls_server_context->sockaddr_length;
         int client_socket;
-        if ((client_socket = accept(tls_server_context->socket, &client_sockaddr, &client_sockaddr_length)) < 0) {
+        if ((client_socket = ac cept(tls_server_context->socket, &client_sockaddr, &client_sockaddr_length)) < 0) {
 
             continue;
 
