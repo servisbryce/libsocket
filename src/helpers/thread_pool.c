@@ -34,10 +34,10 @@ void *thread_worker(void *thread_worker_vargs) {
 
                 SSL_shutdown(tls_worker_vargs->ssl);
                 SSL_free(tls_worker_vargs->ssl);
+                free(tls_worker_vargs);
                 
             }
 
-            free(thread_work->routine_vargs);
             free(thread_work);
 
         }
@@ -92,7 +92,7 @@ thread_pool_t *thread_pool_create(size_t threads) {
 
 int thread_pool_assign_work(thread_pool_t *thread_pool, void *(*routine)(void *vargs), void *routine_vargs) {
 
-    if (!thread_pool) {
+    if (!thread_pool || thread_pool->halt) {
 
         return -1;
 

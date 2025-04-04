@@ -1,8 +1,4 @@
-#include "../include/thread_pool.h"
 #include "../include/libsocket.h"
-#include "../include/sockaddr.h"
-#include "../include/socket.h"
-#include "../include/tls.h"
 #include <stdint.h>
 #include <unistd.h>
 #include <error.h>
@@ -65,23 +61,18 @@ void destroy_tls_server_context(tls_server_context_t *tls_server_context) {
 
 }
 
-int tls_server_listen(tls_server_context_t *tls_server_context) {
+void *tls_server_orchestrator(void *tls_server_orchestrator_vargs) {
 
-    if (!tls_server_context || !tls_server_context->sockaddr || tls_server_context->socket < 0 || !tls_server_context->ssl_context || tls_server_context->threads == 0) {
-
-        return -1;
-
-    }
-
-    thread_pool_t *thread_pool = NULL;
-    if (!(thread_pool = thread_pool_create(tls_server_context->threads))) {
-
-        return -1;
-
-    }
-
+    tls_server_context_t *tls_server_context = (tls_server_context_t *) tls_server_orchestrator_vargs;
+    thread_pool_t *thread_pool = tls_server_context->thread_pool;
     while (1) {
 
+        if (thread_pool->halt) {
+
+            return (void *) -1;
+
+        }
+        
         struct sockaddr client_sockaddr;
         socklen_t client_sockaddr_length = *tls_server_context->sockaddr_length;
         int client_socket;
@@ -128,6 +119,40 @@ int tls_server_listen(tls_server_context_t *tls_server_context) {
 
     }
 
+    return (void *) -1;
+
+}
+
+int tls_server_listen(tls_server_context_t *tls_server_context) {
+
+    if (!tls_server_context || !tls_server_context->sockaddr || tls_server_context->socket < 0 || !tls_server_context->ssl_context || tls_server_context->threads == 0) {
+
+        return -1;
+
+    }
+
+    thread_pool_t *thread_pool = NULL;
+    if (!(thread_pool = thread_pool_create(tls_server_context->threads))) {
+
+        return -1;
+
+    }
+
+    tls_server_context->thread_pool = thread_pool;
+    thread_pool_assign_work(thread_pool, tls_server_orchestrator, (void *) tls_server_context);
+
+}
+
+void tls_server_wait(tls_server_context_t *tls_server_context) {
+
+    thread_pool_wait(tls_server_context->thread_pool);
+
+}
+
+void tls_server_destroy(tls_server_context_t *tls_server_context) {
+
+    thread_pool_destroy(tls_server_context->thread_pool);
+
 }
 
 void *routine(void *arg) {
@@ -142,6 +167,8 @@ void main() {
 
     tls_server_context_t *a = create_tls_server_context("127.0.0.1", 1025, "cert.pem", "key.pem", 32, (void *) routine);
     tls_server_listen(a);
+    getchar();
+    tls_server_destroy(a);
     destroy_tls_server_context(a);
 
 }
