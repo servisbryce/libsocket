@@ -117,10 +117,10 @@ int tls_server_listen(tls_server_context_t *tls_server_context) {
 
         }
 
-        tls_worker_vargs_t *vargs = (tls_worker_vargs_t *) malloc(sizeof(tls_worker_vargs_t));
-        vargs->ssl = client_ssl;
-        vargs->bio = client_bio;
-        if (thread_pool_assign_work(thread_pool, (void *) tls_server_context->routine, (void *) vargs) == -1) {
+        tls_worker_vargs_t *tls_worker_vargs = (tls_worker_vargs_t *) malloc(sizeof(tls_worker_vargs_t));
+        tls_worker_vargs->ssl = client_ssl;
+        tls_worker_vargs->bio = client_bio;
+        if (thread_pool_assign_work(thread_pool, (void *) tls_server_context->routine, (void *) tls_worker_vargs) == -1) {
 
             continue;
 
