@@ -88,6 +88,26 @@ thread_pool_t *thread_pool_create(size_t threads) {
 
 }
 
+int thread_pool_increment_threads(thread_pool_t *thread_pool, size_t threads) {
+
+    if (!thread_pool || threads < 1) {
+
+        return -1;
+
+    }
+
+    for (size_t i = 0; i < threads; i++) {
+
+        pthread_t thread;
+        pthread_create(&thread, NULL, thread_worker, (void *) thread_pool);
+        pthread_detach(thread);
+
+    }
+
+    return 0;
+
+}
+
 int thread_pool_assign_work(thread_pool_t *thread_pool, void *(*routine)(void *vargs), void *routine_vargs) {
 
     if (!thread_pool || thread_pool->halt) {

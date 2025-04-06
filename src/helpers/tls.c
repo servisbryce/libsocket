@@ -122,9 +122,27 @@ int tls_server_set_routine(tls_server_context_t *tls_server_context, void (*rout
 
 }
 
-int tls_server_set_threads(tls_server_context_t *tls_server_context, size_t threads) {
+int tls_server_increment_threads(tls_server_context_t *tls_server_context, size_t threads) {
 
     if (!tls_server_context || !tls_server_context->thread_pool || threads < 1) {
+
+        return -1;
+
+    }
+
+    if (thread_pool_increment_threads(tls_server_context->thread_pool, threads) < 0) {
+
+        return -1;
+
+    }
+
+    return 0;
+
+}
+
+int tls_server_decrement_threads(tls_server_context_t *tls_server_context, size_t threads) {
+
+    if (!tls_server_context || !tls_server_context->thread_pool || (threads + 1) >= tls_server_context->threads) {
 
         return -1;
 
@@ -137,7 +155,7 @@ int tls_server_set_threads(tls_server_context_t *tls_server_context, size_t thre
     }
 
     tls_server_context->thread_pool = NULL;
-    tls_server_context->threads = threads;
+    tls_server_context->threads -= threads;
     if (!(tls_server_context->thread_pool = thread_pool_create(tls_server_context->threads))) {
 
         return -1;
