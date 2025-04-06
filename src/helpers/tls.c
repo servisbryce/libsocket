@@ -118,6 +118,7 @@ void tls_server_set_routine(tls_server_context_t *tls_server_context, void (*rou
     }
 
     tls_server_context->routine = routine;
+    return;
 
 }
 
@@ -222,12 +223,26 @@ int tls_server_listen(tls_server_context_t *tls_server_context) {
 
 void tls_server_wait(tls_server_context_t *tls_server_context) {
 
+    if (!tls_server_context) {
+
+        return;
+
+    }
+
     thread_pool_wait(tls_server_context->thread_pool);
+    return;
 
 }
 
 void tls_server_destroy(tls_server_context_t *tls_server_context) {
 
+    if (!tls_server_context) {
+
+        return;
+
+    }
+
     thread_pool_destroy(tls_server_context->thread_pool);
+    return;
 
 }
