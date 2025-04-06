@@ -33,7 +33,7 @@ typedef struct client_context {
 
 } client_context_t;
 
-tls_server_context_t *create_tls_server_context(char *address, uint16_t port, char *chain_certificate_file, char *private_key_file, size_t threads, void (*routine)(void *vargs));
+tls_server_context_t *create_tls_server_context(char *address, uint16_t port, char *chain_certificate_file, char *private_key_file, size_t threads, long timeout, void (*routine)(void *vargs));
 SSL_CTX *create_ssl_server_context(char *chain_certificate_file, char *private_key_file, int cache_id);
 int destroy_tls_server_context(tls_server_context_t *tls_server_context);
 int destroy_ssl_server_context(SSL_CTX *context);

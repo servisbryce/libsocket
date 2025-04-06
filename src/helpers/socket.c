@@ -1,9 +1,11 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <sys/time.h>
 #include <unistd.h>
+#include <string.h>
 #include <stdio.h>
 
-int create_socket(struct sockaddr *sockaddr) {
+int create_socket(struct sockaddr *sockaddr, long timeout) {
 
     if (!sockaddr) {
 
@@ -28,9 +30,21 @@ int create_socket(struct sockaddr *sockaddr) {
     int socket_options = SO_REUSEADDR | SO_REUSEPORT;
     if (setsockopt(socket_file_descriptor, SOL_SOCKET, socket_options, &socket_options, sizeof(socket_options)) == -1) {
 
-        printf("hi\n");
         close(socket_file_descriptor);
         return -1;
+
+    }
+
+    if (timeout > 0) {
+
+        struct timeval time;
+        memset(&time, 0, sizeof(time));
+        time.tv_sec = timeout;
+        if (setsockopt(socket_file_descriptor, SOL_SOCKET, SO_RCVTIMEO, &time, sizeof(time)) < 0) {
+
+            return -1;
+
+        }
 
     }
 
@@ -65,7 +79,7 @@ int destroy_socket(int socket_file_descriptor) {
         return -1;
 
     }
-    
+
     return 0;
 
 }

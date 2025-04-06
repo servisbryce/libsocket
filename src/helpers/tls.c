@@ -69,7 +69,7 @@ int destroy_ssl_server_context(SSL_CTX *context) {
 }
 
 
-tls_server_context_t *create_tls_server_context(char *address, uint16_t port, char *certificate_file, char *private_key_file, size_t threads, void (*routine)(void *vargs)) {
+tls_server_context_t *create_tls_server_context(char *address, uint16_t port, char *certificate_file, char *private_key_file, size_t threads, long timeout, void (*routine)(void *vargs)) {
 
     if (!address || !certificate_file || !private_key_file || threads < 1 || port < 1 || !routine) {
 
@@ -94,7 +94,7 @@ tls_server_context_t *create_tls_server_context(char *address, uint16_t port, ch
 
     }
 
-    if ((tls_server_context->socket = create_socket(tls_server_context->sockaddr)) < 0) {
+    if ((tls_server_context->socket = create_socket(tls_server_context->sockaddr, timeout)) < 0) {
 
         destroy_ssl_server_context(tls_server_context->ssl_context);
         destroy_sockaddr(tls_server_context->sockaddr);
@@ -173,7 +173,7 @@ int destroy_tls_server_context(tls_server_context_t *tls_server_context) {
         return -1;
 
     }
-    
+
     free(tls_server_context);
     return 0;
 
