@@ -9,9 +9,9 @@
 
 int cache_id;
 
-SSL_CTX *create_ssl_server_context(char *chain_certificate_file, char *private_key_file, int cache_id) {
+SSL_CTX *create_ssl_server_context(char *certificate_file, char *private_key_file, int cache_id) {
 
-    if (!chain_certificate_file && !private_key_file) {
+    if (!certificate_file && !private_key_file) {
 
         return NULL;
 
@@ -32,7 +32,7 @@ SSL_CTX *create_ssl_server_context(char *chain_certificate_file, char *private_k
     }
 
     SSL_CTX_set_options(context, SSL_OP_IGNORE_UNEXPECTED_EOF | SSL_OP_NO_RENEGOTIATION | SSL_OP_CIPHER_SERVER_PREFERENCE);
-    if (SSL_CTX_use_certificate_chain_file(context, chain_certificate_file) <= 0) {
+    if (SSL_CTX_use_certificate_chain_file(context, certificate_file) <= 0) {
 
         SSL_CTX_free(context);
         return NULL;
@@ -69,9 +69,9 @@ void destroy_ssl_server_context(SSL_CTX *context) {
 }
 
 
-tls_server_context_t *create_tls_server_context(char *address, uint16_t port, char *chain_certificate_file, char *private_key_file, size_t threads, void (*routine)(void *vargs)) {
+tls_server_context_t *create_tls_server_context(char *address, uint16_t port, char *certificate_file, char *private_key_file, size_t threads, void (*routine)(void *vargs)) {
 
-    if (!address || !chain_certificate_file || !private_key_file || threads == 0 || port == 0 || !routine) {
+    if (!address || !certificate_file || !private_key_file || threads == 0 || port == 0 || !routine) {
 
         return NULL;
 
@@ -79,7 +79,7 @@ tls_server_context_t *create_tls_server_context(char *address, uint16_t port, ch
 
     cache_id++;
     tls_server_context_t *tls_server_context = (tls_server_context_t*) malloc(sizeof(tls_server_context_t));
-    if(!(tls_server_context->ssl_context = create_ssl_server_context(chain_certificate_file, private_key_file, cache_id))) {
+    if(!(tls_server_context->ssl_context = create_ssl_server_context(certificate_file, private_key_file, cache_id))) {
 
         free(tls_server_context);
         return NULL;

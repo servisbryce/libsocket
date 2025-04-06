@@ -15,7 +15,6 @@ void main() {
 
     tls_server_context_t *a = create_tls_server_context("127.0.0.1", 1025, "cert.pem", "key.pem", 32, (void *) routine);
     tls_server_listen(a);
-    getchar();
     tls_server_destroy(a);
     destroy_tls_server_context(a);
 
