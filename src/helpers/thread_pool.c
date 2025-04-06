@@ -168,6 +168,8 @@ int thread_pool_destroy(thread_pool_t *thread_pool) {
 
         }
 
+        free(current);
+
     }
 
     thread_pool->thread_work_head = NULL;

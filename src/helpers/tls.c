@@ -197,9 +197,8 @@ void *tls_server_orchestrator(void *tls_server_orchestrator_vargs) {
         }
         
         struct sockaddr client_sockaddr;
-        socklen_t client_sockaddr_length = *tls_server_context->sockaddr_length;
         int client_socket;
-        if ((client_socket = accept(tls_server_context->socket, &client_sockaddr, &client_sockaddr_length)) < 0) {
+        if ((client_socket = accept(tls_server_context->socket, &client_sockaddr, tls_server_context->sockaddr_length)) < 0) {
 
             continue;
 

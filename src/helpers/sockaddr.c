@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <netdb.h>
 
-struct sockaddr *create_sockaddr(char *address, uint16_t port, size_t **sockaddr_length) {
+struct sockaddr *create_sockaddr(char *address, uint16_t port, unsigned int **sockaddr_length) {
 
     if (!address || port <= 0) {
 
@@ -26,7 +26,7 @@ struct sockaddr *create_sockaddr(char *address, uint16_t port, size_t **sockaddr
 
     }
 
-    size_t sockaddr_len = sizeof(struct sockaddr_in6);
+    unsigned int sockaddr_len = sizeof(struct sockaddr_in6);
     if (response->ai_addr->sa_family == AF_INET) {
 
         sockaddr_len = sizeof(struct sockaddr_in);
