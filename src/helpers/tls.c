@@ -109,6 +109,18 @@ tls_server_context_t *create_tls_server_context(char *address, uint16_t port, ch
 
 }
 
+void tls_server_set_routine(tls_server_context_t *tls_server_context, void (*routine)(void *vargs)) {
+
+    if (!tls_server_context || !routine) {
+
+        return;
+
+    }
+
+    tls_server_context->routine = routine;
+
+}
+
 void destroy_tls_server_context(tls_server_context_t *tls_server_context) {
 
     if (!tls_server_context || !tls_server_context->sockaddr || !tls_server_context->ssl_context) {
