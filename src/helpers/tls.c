@@ -305,3 +305,24 @@ int tls_server_shutdown(tls_server_context_t *tls_server_context) {
     return 0;
 
 }
+
+int tls_server_set_timeout(tls_server_context_t *tls_server_context, long timeout) {
+
+    if (timeout < 0) {
+
+        return -1;
+
+    }
+
+    struct timeval time;
+    memset(&time, 0, sizeof(time));
+    time.tv_sec = timeout;
+    if (setsockopt(tls_server_context->socket, SOL_SOCKET, SO_RCVTIMEO, &time, sizeof(time)) < 0) {
+
+        return -1;
+
+    }
+
+    return 0;
+
+}

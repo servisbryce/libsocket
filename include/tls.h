@@ -40,5 +40,8 @@ int destroy_ssl_server_context(SSL_CTX *context);
 int tls_server_shutdown(tls_server_context_t *tls_server_context);
 int tls_server_wait(tls_server_context_t *tls_server_context);
 int tls_server_listen(tls_server_context_t *tls_server_context);
+int tls_server_set_timeout(tls_server_context_t *tls_server_context, long timeout);
+int tls_server_set_threads(tls_server_context_t *tls_server_context, size_t threads);
+int tls_server_set_routine(tls_server_context_t *tls_server_context, void (*routine)(void *vargs));
 
 #endif
