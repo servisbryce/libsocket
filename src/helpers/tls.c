@@ -122,6 +122,27 @@ void tls_server_set_routine(tls_server_context_t *tls_server_context, void (*rou
 
 }
 
+int tls_server_set_threads(tls_server_context_t *tls_server_context, size_t threads) {
+
+    if (!tls_server_context || !tls_server_context->thread_pool) {
+
+        return -1;
+
+    }
+
+    thread_pool_destroy(tls_server_context->thread_pool);
+    tls_server_context->thread_pool = NULL;
+    tls_server_context->threads = threads;
+    if (!(tls_server_context->thread_pool = thread_pool_create(tls_server_context->threads))) {
+
+        return -1;
+
+    }
+
+    return 0;
+
+}
+
 void destroy_tls_server_context(tls_server_context_t *tls_server_context) {
 
     if (!tls_server_context || !tls_server_context->sockaddr || !tls_server_context->ssl_context) {
@@ -234,15 +255,20 @@ void tls_server_wait(tls_server_context_t *tls_server_context) {
 
 }
 
-void tls_server_destroy(tls_server_context_t *tls_server_context) {
+int tls_server_shutdown(tls_server_context_t *tls_server_context) {
 
-    if (!tls_server_context) {
+    if (!tls_server_context || !tls_server_context->thread_pool) {
 
-        return;
+        return -1;
 
     }
 
-    thread_pool_destroy(tls_server_context->thread_pool);
-    return;
+    if (thread_pool_destroy(tls_server_context->thread_pool) == -1) {
+
+        return -1;
+
+    }
+
+    return 0;
 
 }
