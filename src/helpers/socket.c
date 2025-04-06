@@ -52,15 +52,20 @@ int create_socket(struct sockaddr *sockaddr) {
 
 }
 
-void destroy_socket(int socket_file_descriptor) {
+int destroy_socket(int socket_file_descriptor) {
 
     if (socket_file_descriptor < 0) {
 
-        return;
+        return -1;
 
     }
 
-    close(socket_file_descriptor);
-    return;
+    if (close(socket_file_descriptor) < 0) {
+
+        return -1;
+
+    }
+    
+    return 0;
 
 }

@@ -5,6 +5,6 @@
 #include <stddef.h>
 
 struct sockaddr *create_sockaddr(char *address, uint16_t port, size_t **sockaddr_length);
-void destroy_sockaddr(struct sockaddr *sockaddr);
+int destroy_sockaddr(struct sockaddr *sockaddr);
 
 #endif

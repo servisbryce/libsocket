@@ -35,10 +35,10 @@ typedef struct client_context {
 
 tls_server_context_t *create_tls_server_context(char *address, uint16_t port, char *chain_certificate_file, char *private_key_file, size_t threads, void (*routine)(void *vargs));
 SSL_CTX *create_ssl_server_context(char *chain_certificate_file, char *private_key_file, int cache_id);
-void destroy_tls_server_context(tls_server_context_t *tls_server_context);
-void destroy_ssl_server_context(SSL_CTX *context);
-void tls_server_destroy(tls_server_context_t *tls_server_context);
-void tls_server_wait(tls_server_context_t *tls_server_context);
+int destroy_tls_server_context(tls_server_context_t *tls_server_context);
+int destroy_ssl_server_context(SSL_CTX *context);
+int tls_server_shutdown(tls_server_context_t *tls_server_context);
+int tls_server_wait(tls_server_context_t *tls_server_context);
 int tls_server_listen(tls_server_context_t *tls_server_context);
 
 #endif

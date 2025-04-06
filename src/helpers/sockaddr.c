@@ -54,15 +54,15 @@ struct sockaddr *create_sockaddr(char *address, uint16_t port, size_t **sockaddr
 
 }
 
-void destroy_sockaddr(struct sockaddr *sockaddr) {
+int destroy_sockaddr(struct sockaddr *sockaddr) {
 
     if (!sockaddr) {
 
-        return;
+        return -1;
 
     }
 
     free(sockaddr);
-    return;
+    return 0;
 
 }

@@ -148,19 +148,34 @@ int tls_server_set_threads(tls_server_context_t *tls_server_context, size_t thre
 
 }
 
-void destroy_tls_server_context(tls_server_context_t *tls_server_context) {
+int destroy_tls_server_context(tls_server_context_t *tls_server_context) {
 
     if (!tls_server_context || tls_server_context->socket < 0 || !tls_server_context->sockaddr || !tls_server_context->ssl_context) {
 
-        return;
+        return -1;
 
     }
 
-    close(tls_server_context->socket);
-    destroy_sockaddr(tls_server_context->sockaddr);
-    destroy_ssl_server_context(tls_server_context->ssl_context);
+    if (close(tls_server_context->socket) < 0) {
+
+        return -1;
+
+    }
+
+    if (destroy_sockaddr(tls_server_context->sockaddr) < 0) {
+
+        return -1;
+
+    }
+
+    if (destroy_ssl_server_context(tls_server_context->ssl_context) < 0) {
+
+        return -1;
+
+    }
+    
     free(tls_server_context);
-    return;
+    return 0;
 
 }
 
@@ -168,7 +183,7 @@ void *tls_server_orchestrator(void *tls_server_orchestrator_vargs) {
 
     if (!tls_server_orchestrator_vargs) {
 
-        return NULL;
+        return (void *) -1;
 
     }
 
@@ -245,7 +260,7 @@ int tls_server_listen(tls_server_context_t *tls_server_context) {
 
     }
 
-    if (thread_pool_assign_work(thread_pool, tls_server_orchestrator, (void *) tls_server_context) < 0) {
+    if (thread_pool_assign_work(tls_server_context->thread_pool, tls_server_orchestrator, (void *) tls_server_context) < 0) {
 
         return -1;
 
