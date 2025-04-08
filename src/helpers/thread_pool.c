@@ -30,7 +30,6 @@ void *thread_worker(void *thread_worker_vargs) {
 
             tls_worker_vargs_t *tls_worker_vargs = (tls_worker_vargs_t *) thread_work->routine_vargs;
             immunity = tls_worker_vargs->immunity;
-
             if (!thread_work->routine((void *) tls_worker_vargs)) {
 
                 SSL_shutdown(tls_worker_vargs->ssl);
@@ -106,7 +105,7 @@ thread_pool_t *thread_pool_create(size_t target_threads, size_t stepwise_threads
 
 int thread_pool_assign_work(thread_pool_t *thread_pool, void *(*routine)(void *vargs), void *routine_vargs) {
 
-    if (!thread_pool || thread_pool->halt || thread_pool->thread_working_count == thread_pool->maximum_threads) {
+    if (!thread_pool || thread_pool->halt || thread_pool->thread_working_count == thread_pool->maximum_threads || !routine || !routine_vargs) {
 
         return -1;
 
