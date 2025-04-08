@@ -198,6 +198,9 @@ void *tls_server_orchestrator(void *tls_server_orchestrator_vargs) {
         tls_worker_vargs->bio = client_bio;
         if (thread_pool_assign_work(tls_server_context->thread_pool, (void *) tls_server_context->routine, (void *) tls_worker_vargs) == -1) {
 
+            SSL_shutdown(client_ssl);
+            SSL_free(client_ssl);
+            close(client_socket);
             continue;
 
         }

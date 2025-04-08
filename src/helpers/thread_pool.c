@@ -106,7 +106,7 @@ thread_pool_t *thread_pool_create(size_t target_threads, size_t stepwise_threads
 
 int thread_pool_assign_work(thread_pool_t *thread_pool, void *(*routine)(void *vargs), void *routine_vargs) {
 
-    if (!thread_pool || thread_pool->halt) {
+    if (!thread_pool || thread_pool->halt || thread_pool->thread_working_count == thread_pool->maximum_threads) {
 
         return -1;
 
