@@ -193,6 +193,7 @@ void *tls_server_orchestrator(void *tls_server_orchestrator_vargs) {
         }
 
         tls_worker_vargs_t *tls_worker_vargs = (tls_worker_vargs_t *) malloc(sizeof(tls_worker_vargs_t));
+        tls_worker_vargs->immunity = true;
         tls_worker_vargs->ssl = client_ssl;
         tls_worker_vargs->bio = client_bio;
         if (thread_pool_assign_work(tls_server_context->thread_pool, (void *) tls_server_context->routine, (void *) tls_worker_vargs) == -1) {

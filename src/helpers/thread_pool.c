@@ -5,15 +5,9 @@
 
 void *thread_worker(void *thread_worker_vargs) {
 
+    bool immunity = false;
     thread_pool_t *thread_pool = (thread_pool_t*) thread_worker_vargs;
     while (1) {
-
-        pthread_mutex_lock(&(thread_pool->thread_worker_count_mutex));
-        if (thread_pool->thread_worker_count > thread_pool->thread_working_count && thread_pool->thread_worker_count > thread_pool->target_threads) {
-
-            break;
-
-        }
 
         pthread_mutex_lock(&(thread_pool->thread_work_mutex));
         while (!thread_pool->halt && thread_pool->thread_work_head == NULL) {
@@ -35,6 +29,8 @@ void *thread_worker(void *thread_worker_vargs) {
         if (thread_work) {
 
             tls_worker_vargs_t *tls_worker_vargs = (tls_worker_vargs_t *) thread_work->routine_vargs;
+            immunity = tls_worker_vargs->immunity;
+
             if (!thread_work->routine((void *) tls_worker_vargs)) {
 
                 SSL_shutdown(tls_worker_vargs->ssl);
@@ -56,11 +52,20 @@ void *thread_worker(void *thread_worker_vargs) {
         }
 
         pthread_mutex_unlock(&(thread_pool->thread_work_mutex));
+        pthread_mutex_lock(&(thread_pool->thread_worker_count_mutex));
+        if (thread_pool->thread_worker_count > thread_pool->thread_working_count && thread_pool->thread_worker_count > thread_pool->target_threads && !immunity) {
+
+            break;
+
+        }
+
+        pthread_mutex_unlock(&(thread_pool->thread_worker_count_mutex));
 
     }
 
     thread_pool->thread_worker_count--;
     pthread_cond_signal(&(thread_pool->thread_working_condition));
+    pthread_mutex_unlock(&(thread_pool->thread_worker_count_mutex));
     pthread_mutex_unlock(&(thread_pool->thread_work_mutex));
     return NULL;
 
@@ -121,6 +126,22 @@ int thread_pool_assign_work(thread_pool_t *thread_pool, void *(*routine)(void *v
 
         thread_pool->thread_work_tail->next = work;
         thread_pool->thread_work_tail = work;
+
+    }
+
+    if (thread_pool->thread_working_count == thread_pool->thread_worker_count && thread_pool->maximum_threads >= thread_pool->stepwise_threads + thread_pool->thread_worker_count) {
+
+        size_t stimulus_threads = thread_pool->stepwise_threads;
+        pthread_mutex_lock(&(thread_pool->thread_worker_count_mutex));
+        thread_pool->thread_worker_count += stimulus_threads;
+        pthread_mutex_unlock(&(thread_pool->thread_worker_count_mutex));
+        for (size_t i = 0; i < stimulus_threads; i++) {
+
+            pthread_t thread;
+            pthread_create(&thread, NULL, thread_worker, (void *) thread_pool);
+            pthread_detach(thread);
+
+        } 
 
     }
 

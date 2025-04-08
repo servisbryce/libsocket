@@ -11,6 +11,7 @@
 
 typedef struct tls_worker_vargs {
 
+    bool immunity;
     BIO *bio;
     SSL *ssl;
 
