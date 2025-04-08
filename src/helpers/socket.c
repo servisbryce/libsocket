@@ -35,7 +35,7 @@ int create_socket(struct sockaddr *sockaddr, long timeout) {
 
     }
 
-    if (timeout > 0) {
+    if (timeout > 1) {
 
         struct timeval time;
         memset(&time, 0, sizeof(time));
