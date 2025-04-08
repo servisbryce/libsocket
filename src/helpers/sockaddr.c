@@ -9,7 +9,7 @@
 
 struct sockaddr *create_sockaddr(char *address, uint16_t port, unsigned int **sockaddr_length) {
 
-    if (!address || port <= 0) {
+    if (!address || port <= 0 || !sockaddr_length) {
 
         return NULL;
 
