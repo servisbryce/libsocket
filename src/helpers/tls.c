@@ -1,3 +1,4 @@
+#include "../../include/libsocket.h"
 #include "../../include/sockaddr.h"
 #include "../../include/socket.h"
 #include "../../include/tls.h"
@@ -8,7 +9,6 @@
 #include <unistd.h>
 
 int cache_id;
-
 SSL_CTX *create_ssl_server_context(char *certificate_file, char *private_key_file, int cache_id) {
 
     if (!certificate_file && !private_key_file) {
@@ -68,10 +68,9 @@ int destroy_ssl_server_context(SSL_CTX *context) {
 
 }
 
+tls_server_context_t *create_tls_server_context(socket_parameters_t *socket_parameters) {
 
-tls_server_context_t *create_tls_server_context(char *address, uint16_t port, char *certificate_file, char *private_key_file, size_t threads, long timeout, void (*routine)(void *vargs)) {
-
-    if (!address || !certificate_file || !private_key_file || threads < 1 || port < 1 || !routine) {
+    if (!socket_parameters->address || !socket_parameters->certificate_file || !socket_parameters->private_key_file || !socket_parameters->routine || socket_parameters->target_threads < 1 || socket_parameters->target_threads > socket_parameters->maximum_threads || socket_parameters->port < 1) {
 
         return NULL;
 
@@ -79,14 +78,14 @@ tls_server_context_t *create_tls_server_context(char *address, uint16_t port, ch
 
     cache_id++;
     tls_server_context_t *tls_server_context = (tls_server_context_t*) malloc(sizeof(tls_server_context_t));
-    if(!(tls_server_context->ssl_context = create_ssl_server_context(certificate_file, private_key_file, cache_id))) {
+    if(!(tls_server_context->ssl_context = create_ssl_server_context(socket_parameters->certificate_file, socket_parameters->private_key_file, cache_id))) {
 
         free(tls_server_context);
         return NULL;
 
     }
 
-    if (!(tls_server_context->sockaddr = create_sockaddr(address, port, &tls_server_context->sockaddr_length))) {
+    if (!(tls_server_context->sockaddr = create_sockaddr(socket_parameters->address, socket_parameters->port, &tls_server_context->sockaddr_length))) {
 
         destroy_ssl_server_context(tls_server_context->ssl_context);
         free(tls_server_context);
@@ -94,7 +93,7 @@ tls_server_context_t *create_tls_server_context(char *address, uint16_t port, ch
 
     }
 
-    if ((tls_server_context->socket = create_socket(tls_server_context->sockaddr, timeout)) < 0) {
+    if ((tls_server_context->socket = create_socket(tls_server_context->sockaddr, socket_parameters->timeout)) < 0) {
 
         destroy_ssl_server_context(tls_server_context->ssl_context);
         destroy_sockaddr(tls_server_context->sockaddr);
@@ -103,66 +102,11 @@ tls_server_context_t *create_tls_server_context(char *address, uint16_t port, ch
 
     }
 
-    tls_server_context->threads = threads;
-    tls_server_context->routine = routine;
+    tls_server_context->target_threads = socket_parameters->target_threads;
+    tls_server_context->maximum_threads = socket_parameters->maximum_threads;
+    tls_server_context->stepwise_threads = socket_parameters->stepwise_threads;
+    tls_server_context->routine = socket_parameters->routine;
     return tls_server_context;
-
-}
-
-int tls_server_set_routine(tls_server_context_t *tls_server_context, void (*routine)(void *vargs)) {
-
-    if (!tls_server_context || !routine) {
-
-        return -1;
-
-    }
-
-    tls_server_context->routine = routine;
-    return 0;
-
-}
-
-int tls_server_increment_threads(tls_server_context_t *tls_server_context, size_t threads) {
-
-    if (!tls_server_context || !tls_server_context->thread_pool || threads < 1) {
-
-        return -1;
-
-    }
-
-    if (thread_pool_increment_threads(tls_server_context->thread_pool, threads) < 0) {
-
-        return -1;
-
-    }
-
-    return 0;
-
-}
-
-int tls_server_decrement_threads(tls_server_context_t *tls_server_context, size_t threads) {
-
-    if (!tls_server_context || !tls_server_context->thread_pool || (threads + 1) >= tls_server_context->threads) {
-
-        return -1;
-
-    }
-
-    if (thread_pool_destroy(tls_server_context->thread_pool) < 0) {
-
-        return -1;
-
-    }
-
-    tls_server_context->thread_pool = NULL;
-    tls_server_context->threads -= threads;
-    if (!(tls_server_context->thread_pool = thread_pool_create(tls_server_context->threads))) {
-
-        return -1;
-
-    }
-
-    return 0;
 
 }
 
@@ -265,13 +209,13 @@ void *tls_server_orchestrator(void *tls_server_orchestrator_vargs) {
 
 int tls_server_listen(tls_server_context_t *tls_server_context) {
 
-    if (!tls_server_context || tls_server_context->socket < 0 || !tls_server_context->ssl_context || tls_server_context->threads < 1) {
+    if (!tls_server_context || tls_server_context->socket < 0 || !tls_server_context->ssl_context || tls_server_context->target_threads < 1) {
 
         return -1;
 
     }
 
-    if (!(tls_server_context->thread_pool = thread_pool_create(tls_server_context->threads))) {
+    if (!(tls_server_context->thread_pool = thread_pool_create(tls_server_context->target_threads, tls_server_context->stepwise_threads, tls_server_context->maximum_threads))) {
 
         return -1;
 
@@ -314,27 +258,6 @@ int tls_server_shutdown(tls_server_context_t *tls_server_context) {
     }
 
     if (thread_pool_destroy(tls_server_context->thread_pool) < 0) {
-
-        return -1;
-
-    }
-
-    return 0;
-
-}
-
-int tls_server_set_timeout(tls_server_context_t *tls_server_context, long timeout) {
-
-    if (timeout < 0) {
-
-        return -1;
-
-    }
-
-    struct timeval time;
-    memset(&time, 0, sizeof(time));
-    time.tv_sec = timeout;
-    if (setsockopt(tls_server_context->socket, SOL_SOCKET, SO_RCVTIMEO, &time, sizeof(time)) < 0) {
 
         return -1;
 

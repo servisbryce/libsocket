@@ -14,6 +14,7 @@ typedef struct thread_work {
 
 typedef struct thread_pool {
 
+    pthread_mutex_t thread_worker_count_mutex;
     pthread_mutex_t thread_work_mutex;
     pthread_cond_t thread_working_condition;
     pthread_cond_t thread_work_condition;
@@ -21,13 +22,15 @@ typedef struct thread_pool {
     thread_work_t *thread_work_tail;
     size_t thread_working_count;
     size_t thread_worker_count;
+    size_t stepwise_threads;
+    size_t maximum_threads;
+    size_t target_threads;
     bool halt;
 
 } thread_pool_t;
 
-thread_pool_t *thread_pool_create(size_t threads);
+thread_pool_t *thread_pool_create(size_t target_threads, size_t stepwise_threads, size_t maximum_threads);
 int thread_pool_assign_work(thread_pool_t *thread_pool, void *(*routine)(void *vargs), void *routine_vargs);
-int thread_pool_increment_threads(thread_pool_t *thread_pool, size_t threads);
 int thread_pool_wait(thread_pool_t *thread_pool);
 int thread_pool_destroy(thread_pool_t *thread_pool);
 

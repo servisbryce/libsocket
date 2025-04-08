@@ -13,9 +13,20 @@ void *routine(void *arg) {
 
 void main() {
 
-    tls_server_context_t *a = create_tls_server_context("127.0.0.1", 1025, "cert.pem", "key.pem", 5, 10, (void *) routine);
+    socket_parameters_t parameters;
+    memset(&parameters, 0, sizeof(parameters));
+    parameters.timeout = 10;
+    parameters.address = "127.0.0.1";
+    parameters.certificate_file = "cert.pem";
+    parameters.private_key_file = "key.pem";
+    parameters.port = 1025;
+    parameters.routine = routine;
+    parameters.maximum_threads = 3;
+    parameters.stepwise_threads = 1;
+    parameters.target_threads = 2;
+
+    tls_server_context_t *a = create_tls_server_context(&parameters);
     tls_server_listen(a);
-    tls_server_decrement_threads(a, 4);
     tls_server_wait(a);
     tls_server_shutdown(a);
     destroy_tls_server_context(a);

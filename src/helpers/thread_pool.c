@@ -8,6 +8,13 @@ void *thread_worker(void *thread_worker_vargs) {
     thread_pool_t *thread_pool = (thread_pool_t*) thread_worker_vargs;
     while (1) {
 
+        pthread_mutex_lock(&(thread_pool->thread_worker_count_mutex));
+        if (thread_pool->thread_worker_count > thread_pool->thread_working_count && thread_pool->thread_worker_count > thread_pool->target_threads) {
+
+            break;
+
+        }
+
         pthread_mutex_lock(&(thread_pool->thread_work_mutex));
         while (!thread_pool->halt && thread_pool->thread_work_head == NULL) {
 
@@ -59,16 +66,20 @@ void *thread_worker(void *thread_worker_vargs) {
 
 }
 
-thread_pool_t *thread_pool_create(size_t threads) {
+thread_pool_t *thread_pool_create(size_t target_threads, size_t stepwise_threads, size_t maximum_threads) {
 
-    if (threads <= 0) {
+    if (target_threads <= 0) {
 
         return NULL;
 
     }
 
     thread_pool_t *thread_pool = (thread_pool_t*) malloc(sizeof(thread_pool_t));
-    thread_pool->thread_worker_count = threads;
+    thread_pool->thread_worker_count = target_threads;
+    thread_pool->target_threads = target_threads;
+    thread_pool->maximum_threads = maximum_threads;
+    thread_pool->stepwise_threads = stepwise_threads;
+    pthread_mutex_init(&(thread_pool->thread_worker_count_mutex), NULL);
     pthread_mutex_init(&(thread_pool->thread_work_mutex), NULL);
     pthread_cond_init(&(thread_pool->thread_working_condition), NULL);
     pthread_cond_init(&(thread_pool->thread_work_condition), NULL);
@@ -76,7 +87,7 @@ thread_pool_t *thread_pool_create(size_t threads) {
     thread_pool->thread_work_tail = NULL;
     thread_pool->halt = false;
 
-    for (size_t i = 0; i < threads; i++) {
+    for (size_t i = 0; i < target_threads; i++) {
 
         pthread_t thread;
         pthread_create(&thread, NULL, thread_worker, (void *) thread_pool);
@@ -85,26 +96,6 @@ thread_pool_t *thread_pool_create(size_t threads) {
     }
 
     return thread_pool;
-
-}
-
-int thread_pool_increment_threads(thread_pool_t *thread_pool, size_t threads) {
-
-    if (!thread_pool || threads < 1) {
-
-        return -1;
-
-    }
-
-    for (size_t i = 0; i < threads; i++) {
-
-        pthread_t thread;
-        pthread_create(&thread, NULL, thread_worker, (void *) thread_pool);
-        pthread_detach(thread);
-
-    }
-
-    return 0;
 
 }
 
