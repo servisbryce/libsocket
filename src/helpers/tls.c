@@ -109,6 +109,7 @@ tls_server_context_t *create_tls_server_context(socket_parameters_t *socket_para
 
     }
 
+    tls_server_context->sockaddr = NULL;
     tls_server_context->target_threads = socket_parameters->target_threads;
     tls_server_context->maximum_threads = socket_parameters->maximum_threads;
     tls_server_context->stepwise_threads = socket_parameters->stepwise_threads;
@@ -166,6 +167,7 @@ void *tls_server_orchestrator(void *tls_server_orchestrator_vargs) {
         }
         
         struct sockaddr client_sockaddr;
+        memset(&client_sockaddr, 0, sizeof(client_sockaddr));
         int client_socket;
         if ((client_socket = accept(tls_server_context->socket, &client_sockaddr, tls_server_context->sockaddr_length)) < 0) {
 
@@ -309,5 +311,24 @@ tls_data_t *tls_receive(void *tls_worker_vargs_p) {
     tls_data->buffer_length = truncated_length;
     tls_data->buffer = buffer;
     return tls_data;
+
+}
+
+int destroy_tls_data(tls_data_t *tls_data) {
+
+    if (!tls_data) {
+
+        return -1;
+
+    }
+
+    if (tls_data->buffer) {
+
+        free(tls_data->buffer);
+
+    }
+
+    free(tls_data);
+    return 0;
 
 }

@@ -48,5 +48,6 @@ int tls_server_shutdown(tls_server_context_t *tls_server_context);
 int tls_server_wait(tls_server_context_t *tls_server_context);
 int tls_server_listen(tls_server_context_t *tls_server_context);
 tls_data_t *tls_receive(void *tls_worker_vargs_p);
+int destroy_tls_data(tls_data_t *tls_data);
 
 #endif

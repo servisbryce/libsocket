@@ -9,6 +9,8 @@ void *routine(void *vargs) {
     tls_data_t *data = tls_receive(a);
     printf("%ld\n", data->buffer_length);
     printf("%p\n", data->buffer);
+    printf("%s\n", (char *) data->buffer);
+    destroy_tls_data(data);
     return NULL;
 
 }
