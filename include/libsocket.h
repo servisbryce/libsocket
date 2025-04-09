@@ -11,6 +11,7 @@ typedef struct socket_parameters_t {
     char *certificate_file;
     char *private_key_file;
     void *(*routine)(void *routine_vargs);
+    size_t buffer_length;
     size_t maximum_threads;
     size_t stepwise_threads;
     size_t target_threads;

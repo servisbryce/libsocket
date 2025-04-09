@@ -102,6 +102,7 @@ tls_server_context_t *create_tls_server_context(socket_parameters_t *socket_para
 
     }
 
+    tls_server_context->buffer_length = socket_parameters->buffer_length;
     tls_server_context->target_threads = socket_parameters->target_threads;
     tls_server_context->maximum_threads = socket_parameters->maximum_threads;
     tls_server_context->stepwise_threads = socket_parameters->stepwise_threads;
@@ -193,6 +194,7 @@ void *tls_server_orchestrator(void *tls_server_orchestrator_vargs) {
         }
 
         tls_worker_vargs_t *tls_worker_vargs = (tls_worker_vargs_t *) malloc(sizeof(tls_worker_vargs_t));
+        tls_worker_vargs->buffer_length = tls_server_context->buffer_length;
         tls_worker_vargs->immunity = true;
         tls_worker_vargs->ssl = client_ssl;
         tls_worker_vargs->bio = client_bio;
@@ -271,7 +273,7 @@ int tls_server_shutdown(tls_server_context_t *tls_server_context) {
 
 }
 
-tls_data_t tls_receive(void *tls_worker_vargs_p) {
+tls_data_t *tls_receive(void *tls_worker_vargs_p) {
 
     if (!tls_worker_vargs_p) {
 
@@ -279,7 +281,7 @@ tls_data_t tls_receive(void *tls_worker_vargs_p) {
 
     }
 
-    tls_worker_vargs_t *tls_worker_vargs = (tls_worker_vargs *) tls_worker_vargs_p;
+    tls_worker_vargs_t *tls_worker_vargs = (tls_worker_vargs_t *) tls_worker_vargs_p;
     if (!tls_worker_vargs->bio || !tls_worker_vargs->ssl) {
 
         return NULL;

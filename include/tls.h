@@ -11,6 +11,7 @@
 
 typedef struct tls_worker_vargs {
 
+    size_t buffer_length;
     bool immunity;
     BIO *bio;
     SSL *ssl;
@@ -26,7 +27,7 @@ typedef struct tls_server_context {
     size_t target_threads;
     size_t stepwise_threads;
     size_t maximum_threads;
-    size_t tcp_buffer_length;
+    size_t buffer_length;
     void *(*routine)(void *routine_vargs);
     int socket;
 
