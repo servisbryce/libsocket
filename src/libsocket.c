@@ -28,7 +28,7 @@ void main() {
     parameters.maximum_threads = 4;
     parameters.stepwise_threads = 2;
     parameters.target_threads = 2;
-    parameters.buffer_length = 64;
+    parameters.buffer_length = 4;
 
     tls_server_context_t *a = create_tls_server_context(&parameters);
     tls_server_listen(a);

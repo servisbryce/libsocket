@@ -311,6 +311,16 @@ tls_data_t *tls_receive(void *tls_worker_vargs_p) {
 
 }
 
+int tls_send(tls_data_t *tls_data) {
+
+    if (!tls_data || !tls_data->buffer) {
+
+        return -1;
+
+    }
+
+}
+
 int destroy_tls_data(tls_data_t *tls_data) {
 
     if (!tls_data) {
