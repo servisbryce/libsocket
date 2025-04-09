@@ -270,3 +270,22 @@ int tls_server_shutdown(tls_server_context_t *tls_server_context) {
     return 0;
 
 }
+
+tls_data_t tls_receive(void *tls_worker_vargs_p) {
+
+    if (!tls_worker_vargs_p) {
+
+        return NULL;
+
+    }
+
+    tls_worker_vargs_t *tls_worker_vargs = (tls_worker_vargs *) tls_worker_vargs_p;
+    if (!tls_worker_vargs->bio || !tls_worker_vargs->ssl) {
+
+        return NULL;
+
+    }
+
+    size_t 
+
+}

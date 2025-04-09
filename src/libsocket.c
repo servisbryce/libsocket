@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <error.h>
 
-void *routine(void *arg) {
+void *routine(void *vargs) {
 
     tls_worker_vargs_t *a = (tls_worker_vargs_t *) arg;
     return NULL;
