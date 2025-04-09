@@ -5,7 +5,7 @@
 
 void *routine(void *vargs) {
 
-    tls_worker_vargs_t *a = (tls_worker_vargs_t *) arg;
+    tls_worker_vargs_t *a = (tls_worker_vargs_t *) vargs;
     return NULL;
 
 }

@@ -288,6 +288,19 @@ tls_data_t *tls_receive(void *tls_worker_vargs_p) {
 
     }
 
-    size_t 
+    size_t truncated_length = 0;
+    void *buffer = malloc(tls_worker_vargs->buffer_length);
+    if (SSL_read_ex(tls_worker_vargs->ssl, buffer, tls_worker_vargs->buffer_length, &truncated_length) <= 0) {
+
+        return NULL;
+
+    }
+
+    buffer = realloc(buffer, truncated_length);
+    tls_data_t tls_data;
+    memset(&tls_data, 0, sizeof(tls_data_t));
+    tls_data.length = truncated_length;
+    tls_data.buffer = buffer;
+    return &tls_data;
 
 }
