@@ -35,7 +35,7 @@ typedef struct tls_server_context {
 
 typedef struct tls_data {
 
-    size_t length;
+    size_t buffer_length;
     void *buffer;
 
 } tls_data_t;

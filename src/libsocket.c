@@ -6,6 +6,9 @@
 void *routine(void *vargs) {
 
     tls_worker_vargs_t *a = (tls_worker_vargs_t *) vargs;
+    tls_data_t *data = tls_receive(a);
+    printf("%ld\n", data->buffer_length);
+    printf("%p\n", data->buffer);
     return NULL;
 
 }
@@ -23,6 +26,7 @@ void main() {
     parameters.maximum_threads = 4;
     parameters.stepwise_threads = 2;
     parameters.target_threads = 2;
+    parameters.buffer_length = 64;
 
     tls_server_context_t *a = create_tls_server_context(&parameters);
     tls_server_listen(a);
