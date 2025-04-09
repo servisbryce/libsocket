@@ -311,13 +311,16 @@ tls_data_t *tls_receive(void *tls_worker_vargs_p) {
 
 }
 
-int tls_send(tls_data_t *tls_data) {
+int tls_send(void *tls_worker_vargs_p, tls_data_t *tls_data) {
 
-    if (!tls_data || !tls_data->buffer) {
+    tls_worker_vargs_t *tls_worker_vargs = (tls_worker_vargs_t *) tls_worker_vargs_p;
+    if (!tls_data || !tls_worker_vargs || !tls_data->buffer || !tls_worker_vargs->bio || !tls_worker_vargs->ssl) {
 
         return -1;
 
     }
+
+    if (SSL_write())
 
 }
 
