@@ -6,9 +6,6 @@
 void *routine(void *arg) {
 
     tls_worker_vargs_t *a = (tls_worker_vargs_t *) arg;
-    SSL_write(a->ssl, "hi", 3);
-    void *b = malloc(50);
-    SSL_read(a->ssl, b, 50);
     return NULL;
 
 }

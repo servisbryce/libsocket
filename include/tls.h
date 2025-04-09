@@ -31,6 +31,13 @@ typedef struct tls_server_context {
 
 } tls_server_context_t;
 
+typedef struct tls_data {
+
+    size_t length;
+    void *buffer;
+
+} tls_data_t;
+
 tls_server_context_t *create_tls_server_context(socket_parameters_t *socket_parameters);
 SSL_CTX *create_ssl_server_context(char *certificate_file, char *private_key_file, int cache_id);
 int destroy_tls_server_context(tls_server_context_t *tls_server_context);
