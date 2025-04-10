@@ -322,9 +322,11 @@ int tls_send(void *tls_worker_vargs_p, tls_data_t *tls_data) {
 
     if (SSL_write(tls_worker_vargs->ssl, tls_data->buffer, tls_data->buffer_length) <= 0) {
 
-
+        return -1;
 
     }
+
+    return 0;
 
 }
 
