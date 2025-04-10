@@ -304,10 +304,9 @@ tls_data_t *tls_receive(void *tls_worker_vargs_p) {
     }
 
     void *truncated_buffer = realloc(buffer, truncated_length);
-    if (truncated_buffer != buffer) {
+    if (truncated_buffer) {
 
-        free(buffer);
-        buffer = NULL;
+        buffer = truncated_buffer;
 
     }
 
