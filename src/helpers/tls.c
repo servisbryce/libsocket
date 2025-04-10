@@ -297,7 +297,7 @@ tls_data_t *tls_receive(void *tls_worker_vargs_p) {
 
     size_t truncated_length = 0;
     void *buffer = malloc(tls_worker_vargs->buffer_length);
-    if (SSL_read_ex(tls_worker_vargs->ssl, buffer, tls_worker_vargs->buffer_length, &truncated_length) < 0) {
+    if (SSL_read_ex(tls_worker_vargs->ssl, buffer, tls_worker_vargs->buffer_length, &truncated_length) <= 0) {
 
         return NULL;
 
@@ -320,7 +320,11 @@ int tls_send(void *tls_worker_vargs_p, tls_data_t *tls_data) {
 
     }
 
-    if (SSL_write())
+    if (SSL_write(tls_worker_vargs->ssl, tls_data->buffer, tls_data->buffer_length) <= 0) {
+
+
+
+    }
 
 }
 
