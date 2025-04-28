@@ -42,6 +42,7 @@ int create_socket(struct sockaddr *sockaddr, long timeout) {
         time.tv_sec = timeout;
         if (setsockopt(socket_file_descriptor, SOL_SOCKET, SO_RCVTIMEO, &time, sizeof(time)) < 0) {
 
+            close(socket_file_descriptor);
             return -1;
 
         }
